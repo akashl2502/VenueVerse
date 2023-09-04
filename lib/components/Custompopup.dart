@@ -2,21 +2,13 @@ import 'package:flutter/material.dart';
 
 class CustomPopupDialog extends StatefulWidget {
   final String title;
-  final String message;
   final String confirmButtonText;
-  final Function onConfirm;
-  final bool showDateTime;
-  final bool showTextInput;
-  final Function(String)? onTextInputChanged;
+  final Function(TimeOfDay) onConfirm;
 
   CustomPopupDialog({
     required this.title,
-    required this.message,
     required this.confirmButtonText,
     required this.onConfirm,
-    this.showDateTime = false,
-    this.showTextInput = false,
-    this.onTextInputChanged,
   });
 
   @override
@@ -24,29 +16,61 @@ class CustomPopupDialog extends StatefulWidget {
 }
 
 class _CustomPopupDialogState extends State<CustomPopupDialog> {
-  DateTime? selectedDateTime;
-  TextEditingController dateTimeController = TextEditingController();
-  TextEditingController textInputController = TextEditingController();
+  TimeOfDay? selectedTime;
 
-  _pickDateTime() async {
-    DateTime? date = await showDatePicker(
+  _pickTime() async {
+    final now = TimeOfDay.now();
+    final startTime = TimeOfDay(hour: 9, minute: 0);
+    final endTime = TimeOfDay(hour: 17, minute: 0);
+
+    TimeOfDay? time = await showTimePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(DateTime.now().year - 5),
-      lastDate: DateTime(DateTime.now().year + 5),
+      initialTime: selectedTime ?? now,
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
     );
-    if (date != null) {
-      TimeOfDay? time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
+
+    if (time != null) {
+      final selectedDateTime = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        time.hour,
+        time.minute,
       );
-      if (time != null) {
-        final DateTime dateTime =
-            DateTime(date.year, date.month, date.day, time.hour, time.minute);
+
+      final startDateTime = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        startTime.hour,
+        startTime.minute,
+      );
+
+      final endDateTime = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        endTime.hour,
+        endTime.minute,
+      );
+
+      if (selectedDateTime.isBefore(startDateTime) ||
+          selectedDateTime.isAfter(endDateTime)) {
+        // Show an error message or inform the user that the selected time is outside the allowed range.
+        // You can use a SnackBar or AlertDialog for this purpose.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please select a time between 9 AM and 5 PM."),
+          ),
+        );
+      } else {
         setState(() {
-          selectedDateTime = dateTime;
-          dateTimeController.text =
-              "${dateTime.toLocal().toIso8601String().split(' ')[0]} ${time.format(context)}";
+          selectedTime = time;
         });
       }
     }
@@ -59,36 +83,28 @@ class _CustomPopupDialogState extends State<CustomPopupDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(widget.message),
+          if (selectedTime != null)
+            Text(
+              'Selected Time: ${selectedTime!.format(context)}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           SizedBox(height: 16),
-          if (widget.showDateTime)
-            GestureDetector(
-              onTap: _pickDateTime,
-              child: AbsorbPointer(
-                child: TextFormField(
-                  controller: dateTimeController,
-                  decoration: InputDecoration(
-                    labelText: 'Select Date & Time',
-                    hintText: 'Select Date & Time',
-                    suffixIcon: Icon(Icons.calendar_today),
-                  ),
+          GestureDetector(
+            onTap: _pickTime,
+            child: AbsorbPointer(
+              child: TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Select Time (9 AM - 5 PM)',
+                  hintText: 'Select Time (9 AM - 5 PM)',
+                  suffixIcon: Icon(Icons.access_time),
                 ),
+                controller: TextEditingController(
+                    text: selectedTime != null
+                        ? selectedTime!.format(context)
+                        : ''),
               ),
             ),
-          if (widget.showDateTime) SizedBox(height: 16),
-          if (widget.showTextInput)
-            TextFormField(
-              controller: textInputController,
-              decoration: InputDecoration(
-                labelText: 'New Mail Id',
-                hintText: 'Enter New Mail Id',
-              ),
-              onChanged: (value) {
-                if (widget.onTextInputChanged != null) {
-                  widget.onTextInputChanged!(value);
-                }
-              },
-            ),
+          ),
         ],
       ),
       actions: <Widget>[
@@ -101,7 +117,9 @@ class _CustomPopupDialogState extends State<CustomPopupDialog> {
         TextButton(
           child: Text(widget.confirmButtonText),
           onPressed: () {
-            widget.onConfirm();
+            if (selectedTime != null) {
+              widget.onConfirm(selectedTime!);
+            }
             Navigator.of(context).pop();
           },
         ),

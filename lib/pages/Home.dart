@@ -5,22 +5,35 @@ import 'package:VenueVerse/pages/Privateaccess.dart';
 import 'package:VenueVerse/pages/RequestStatus.dart';
 import 'package:VenueVerse/pages/Seminarhall.dart';
 import 'package:VenueVerse/pages/ViewRequests.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:intl/intl.dart';
+
+var dateindex = 0;
 
 class Home extends StatefulWidget {
-  const Home({super.key});
-
+  const Home({required this.uid});
+  final uid;
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+  @override
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   DateTime? date;
+  bool _isloading = true;
+  List Room = [];
   final _advancedDrawerController = AdvancedDrawerController();
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -162,12 +175,15 @@ class _HomeState extends State<Home> {
                               child: DateCarousel(),
                             ),
                           ),
-                          Text(
-                            'Check Available Venues',
-                            style: GoogleFonts.ysabeau(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 25,
+                          GestureDetector(
+                            onTap: () {},
+                            child: Text(
+                              'Check Available Venues',
+                              style: GoogleFonts.ysabeau(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 25,
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -314,7 +330,7 @@ class _HomeState extends State<Home> {
                       context,
                       PageTransition(
                         type: PageTransitionType.rotate,
-                        child: Home(),
+                        child: Home(uid: widget.uid),
                         alignment: Alignment.topCenter,
                         isIos: true,
                         duration: Duration(milliseconds: 500),
@@ -397,12 +413,18 @@ class _HomeState extends State<Home> {
     _advancedDrawerController.showDrawer();
   }
 
+  String Getformateddate() {
+    DateTime dateTime = DateTime.now().add(Duration(days: dateindex));
+    String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
+    return formattedDate;
+  }
+
   void _onSeminarHallPressed() {
     Navigator.push(
       context,
       PageTransition(
         type: PageTransitionType.rotate,
-        child: Seminarhall(),
+        child: Seminarhall(Selectdate: Getformateddate()),
         alignment: Alignment.topCenter,
         isIos: true,
         duration: Duration(milliseconds: 500),
@@ -415,7 +437,7 @@ class _HomeState extends State<Home> {
       context,
       PageTransition(
         type: PageTransitionType.rotate,
-        child: Labs(),
+        child: Labs(Selectdate: Getformateddate()),
         alignment: Alignment.topCenter,
         isIos: true,
         duration: Duration(milliseconds: 500),

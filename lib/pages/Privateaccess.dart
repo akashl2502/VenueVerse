@@ -59,39 +59,21 @@ class _PrivateState extends State<Private> {
                     ),
                   ),
                   IconButton(
-                    color: Appcolor.firstgreen,
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => CustomPopupDialog(
-                          title: "Confirm Action !",
-                          message: "Are you sure you want to change?",
-                          confirmButtonText: "Yes",
-                          showTextInput: true,
-                          onTextInputChanged: (value) {
-                            print("Text Input: $value");
-                          },
-                          onConfirm: () {
-                            final snackBar = SnackBar(
-                              elevation: 0,
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.transparent,
-                              content: AwesomeSnackbarContent(
-                                title: 'Mail Changed Successfully',
-                                message: 'Check the card for the changes',
-                                contentType: ContentType.success,
-                              ),
-                            );
-
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(snackBar);
-                          },
-                        ),
-                      );
-                    },
-                  ),
+                      color: Appcolor.firstgreen,
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => CustomPopupDialog(
+                            title: "Select Time",
+                            confirmButtonText: "Confirm",
+                            onConfirm: (selectedTime) {
+                              // Handle the selected time here
+                              print("Selected Time: $selectedTime");
+                            },
+                          ),
+                        );
+                      }),
                 ],
               ),
             ),

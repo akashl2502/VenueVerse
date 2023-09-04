@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1014878134478",
+    "project_id": "venueverse-1792a",
+    "storage_bucket": "venueverse-1792a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014878134478:android:338bc4b3048cda07fcf09f",
+        "android_client_info": {
+          "package_name": "com.example.Venueverse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1014878134478-dqqnirr1bc28bclbvtqbp0c9idmoqmmq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.Venueverse",
+            "certificate_hash": "03a495c9610c31f365a2513f92db9d555acd9e3d"
+          }
+        },
+        {
+          "client_id": "1014878134478-7kpa99qvic1o1peo344ljrs8aajqrh67.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAys3cIfQ-2bT5R3qyiTrrLhoQJkChJLZ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1014878134478-7kpa99qvic1o1peo344ljrs8aajqrh67.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

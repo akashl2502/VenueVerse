@@ -1,4 +1,5 @@
 import 'package:VenueVerse/components/Colors.dart';
+import 'package:VenueVerse/pages/Home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -16,7 +17,7 @@ class _DateCarouselState extends State<DateCarousel> {
     DateTime firstDayOfNextMonth = DateTime(now.year, now.month + 1, 1);
     DateTime lastDayOfCurrentMonth =
         firstDayOfNextMonth.subtract(Duration(days: 1));
-    return lastDayOfCurrentMonth.day - now.day + 1;
+    return lastDayOfCurrentMonth.day - now.day + 10;
   }
 
   @override
@@ -87,6 +88,7 @@ class _DateCarouselState extends State<DateCarousel> {
                           onTap: () {
                             setState(() {
                               selectedDateIndex = index;
+                              dateindex = index;
                             });
                           },
                           child: Container(
