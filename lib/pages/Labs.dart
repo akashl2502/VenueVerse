@@ -83,7 +83,7 @@ class _LabsState extends State<Labs> {
                         return Labsrefacctor(
                           width: width,
                           height: height,
-                          name: e.toString(),
+                          name: e['name'],
                         );
                       }).toList(),
                     );

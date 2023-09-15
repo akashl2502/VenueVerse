@@ -12,6 +12,8 @@ import 'package:page_transition/page_transition.dart';
 import '../components/Colors.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
+Map userdet = {};
+
 class userdetails extends StatefulWidget {
   const userdetails({required this.uid});
   final uid;
@@ -58,6 +60,7 @@ class _userdetailsState extends State<userdetails> {
       final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
       print(_docData);
       if (_docData.isNotEmpty) {
+        userdet = _docData[0] as Map;
         Navigator.pushReplacement(
           context,
           PageTransition(

@@ -88,7 +88,6 @@ class _DateCarouselState extends State<DateCarousel> {
                           onTap: () {
                             setState(() {
                               selectedDateIndex = index;
-                              dateindex = index;
                             });
                           },
                           child: Container(
@@ -146,56 +145,56 @@ class _DateCarouselState extends State<DateCarousel> {
   }
 }
 
-extension DateTimeExtensions on DateTime {
-  String get monthName {
-    switch (this.month) {
-      case 1:
-        return 'January';
-      case 2:
-        return 'February';
-      case 3:
-        return 'March';
-      case 4:
-        return 'April';
-      case 5:
-        return 'May';
-      case 6:
-        return 'June';
-      case 7:
-        return 'July';
-      case 8:
-        return 'August';
-      case 9:
-        return 'September';
-      case 10:
-        return 'October';
-      case 11:
-        return 'November';
-      case 12:
-        return 'December';
-      default:
-        return '';
-    }
-  }
+// extension DateTimeExtensions on DateTime {
+//   String get monthName {
+//     switch (this.month) {
+//       case 1:
+//         return 'January';
+//       case 2:
+//         return 'February';
+//       case 3:
+//         return 'March';
+//       case 4:
+//         return 'April';
+//       case 5:
+//         return 'May';
+//       case 6:
+//         return 'June';
+//       case 7:
+//         return 'July';
+//       case 8:
+//         return 'August';
+//       case 9:
+//         return 'September';
+//       case 10:
+//         return 'October';
+//       case 11:
+//         return 'November';
+//       case 12:
+//         return 'December';
+//       default:
+//         return '';
+//     }
+//   }
 
-  String get weekdayName {
-    switch (this.weekday) {
-      case 1:
-        return 'Mo';
-      case 2:
-        return 'Tu';
-      case 3:
-        return 'We';
-      case 4:
-        return 'Th';
-      case 5:
-        return 'Fr';
-      case 6:
-        return 'Sa';
-      case 7:
-        return 'Su';
-      default:
-        return '';
-    }
-  }
-}
+//   String get weekdayName {
+//     switch (this.weekday) {
+//       case 1:
+//         return 'Mo';
+//       case 2:
+//         return 'Tu';
+//       case 3:
+//         return 'We';
+//       case 4:
+//         return 'Th';
+//       case 5:
+//         return 'Fr';
+//       case 6:
+//         return 'Sa';
+//       case 7:
+//         return 'Su';
+//       default:
+//         return '';
+//     }
+//   }
+// }

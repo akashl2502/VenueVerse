@@ -1,6 +1,7 @@
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Rooms.dart';
 import 'package:VenueVerse/components/Snackbar.dart';
+import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -29,10 +30,12 @@ class _SeminarhallState extends State<Seminarhall> {
   void Getdata() async {
     await Getrooms(context: context).then((value) {
       setState(() {
-        print(value['hall']);
-        Rooms = value['hall'];
+        print(value['Halls']);
+        Rooms = value['Halls'];
         _isloading = false;
       });
+    }).catchError((e) {
+      print(e);
     });
   }
 
@@ -84,7 +87,12 @@ class _SeminarhallState extends State<Seminarhall> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: Rooms.map((e) {
                         return Hallrefactor(
-                            width: width, height: height, name: e.toString());
+                          width: width,
+                          height: height,
+                          name: e['name'],
+                          selectdate: widget.Selectdate,
+                          uid: e['uid'],
+                        );
                       }).toList(),
                     );
                   }),
@@ -98,18 +106,22 @@ class Hallrefactor extends StatefulWidget {
       {super.key,
       required this.width,
       required this.height,
-      required this.name});
+      required this.name,
+      required this.selectdate,
+      required this.uid});
 
   final double width;
   final double height;
   final String name;
-
+  final uid;
+  final selectdate;
   @override
   State<Hallrefactor> createState() => _HallrefactorState();
 }
 
 class _HallrefactorState extends State<Hallrefactor> {
   TimeOfDay? selectedTime;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -198,29 +210,93 @@ class _HallrefactorState extends State<Hallrefactor> {
         ));
   }
 
-  _pickTime() async {
+  Future<void> _pickTime() async {
     final now = TimeOfDay.now();
     final startTime = TimeOfDay(hour: 9, minute: 0);
     final endTime = TimeOfDay(hour: 17, minute: 0);
 
-    TimeOfDay? time = await showTimePicker(
+    TimeOfDay? timeS;
+    TimeOfDay? timeE;
+
+    await showDialog(
       context: context,
-      initialTime: selectedTime ?? now,
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-          child: child!,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Select Start Time"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () async {
+                  timeS = await showTimePicker(
+                    context: context,
+                    initialTime: selectedTime ?? now,
+                    builder: (BuildContext context, Widget? child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(alwaysUse24HourFormat: false),
+                        child: child!,
+                      );
+                    },
+                  );
+
+                  Navigator.of(context).pop();
+                },
+                child: Text("Pick Time"),
+              ),
+            ],
+          ),
         );
       },
     );
 
-    if (time != null) {
-      final selectedDateTime = DateTime(
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Select End Time"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () async {
+                  timeE = await showTimePicker(
+                    context: context,
+                    initialTime: selectedTime ?? now,
+                    builder: (BuildContext context, Widget? child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(alwaysUse24HourFormat: false),
+                        child: child!,
+                      );
+                    },
+                  );
+
+                  Navigator.of(context).pop();
+                },
+                child: Text("Pick Time"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (timeS != null && timeE != null) {
+      final selectedDateTimeStart = DateTime(
         DateTime.now().year,
         DateTime.now().month,
         DateTime.now().day,
-        time.hour,
-        time.minute,
+        timeS!.hour,
+        timeS!.minute,
+      );
+
+      final selectedDateTimeEnd = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        timeE!.hour,
+        timeE!.minute,
       );
 
       final startDateTime = DateTime(
@@ -239,18 +315,32 @@ class _HallrefactorState extends State<Hallrefactor> {
         endTime.minute,
       );
 
-      if (selectedDateTime.isBefore(startDateTime) ||
-          selectedDateTime.isAfter(endDateTime)) {
-        // Show an error message or inform the user that the selected time is outside the allowed range.
-        // You can use a SnackBar or AlertDialog for this purpose.
+      if (selectedDateTimeStart.isBefore(startDateTime) ||
+          selectedDateTimeStart.isAfter(endDateTime) ||
+          selectedDateTimeEnd.isBefore(startDateTime) ||
+          selectedDateTimeEnd.isAfter(endDateTime)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Please select a time between 9 AM and 5 PM."),
+            content: Text("Please select times between 9 AM and 5 PM."),
           ),
         );
       } else {
-        setState(() {
-          // selectedTime = time;
+        var a = timeS!.hour.toString() + ":" + timeS!.minute.toString();
+        var b = timeE!.hour.toString() + ":" + timeE!.minute.toString();
+        await _firestore.collection("request").add({
+          "dor": widget.selectdate,
+          "did": userdet['did'],
+          'name': userdet['name'],
+          'roll': userdet['registerno'],
+          'uid': userdet['uid'],
+          'FT': a,
+          'ET': b,
+          'isapproved': 'pending',
+          'dept': userdet['dept'],
+          'rid': widget.uid,
+          'RN': widget.name
+        }).then((value) {
+          print('Data Pushed');
         });
       }
     }
