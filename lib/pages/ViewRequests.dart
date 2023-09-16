@@ -1,9 +1,12 @@
+import 'package:VenueVerse/components/Snackbar.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:uuid/uuid.dart';
+import 'package:uuid/v4.dart';
 import '../components/Colors.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
 class Viewrequests extends StatefulWidget {
   const Viewrequests({super.key});
@@ -36,7 +39,7 @@ class _ViewrequestsState extends State<Viewrequests> {
               child: StreamBuilder(
                   stream: _firestore
                       .collection('request')
-                      .where('did', isEqualTo: userdet['did'])
+                      .where('dept', isEqualTo: userdet['dept'])
                       .where('isapproved', isEqualTo: 'pending')
                       .snapshots(),
                   builder: (context, snapshot) {
@@ -104,7 +107,80 @@ class _RequestcardState extends State<Requestcard> {
     await _firestore
         .collection('request')
         .doc(widget.docid)
-        .update({'isapproved': action});
+        .update({'isapproved': action}).then((value) async {
+      if (action == "Approved") {
+        updateBooking();
+      } else {
+        Showsnackbar(
+            context: context,
+            contentType: ContentType.failure,
+            title: "Rejected",
+            message: "${widget.data['name']} request haas been updated");
+      }
+    });
+  }
+
+  Future<void> updateBooking() async {
+    try {
+      var uuid = Uuid();
+      String Randomuuid = uuid.v4();
+      print(Randomuuid);
+      DocumentReference<Map<String, dynamic>> docRef =
+          _firestore.collection("Booking").doc(widget.data['dor']);
+
+      DocumentSnapshot<Map<String, dynamic>> querySnapshot = await docRef.get();
+
+      if (querySnapshot.exists) {
+        Map<String, dynamic> _docData = querySnapshot.data()!;
+        if (_docData.keys.contains(widget.data['rid'])) {
+          print(_docData[widget.data['rid']]);
+          Map<String, dynamic> newData = {
+            widget.data['rid']: {
+              ..._docData[widget.data['rid']],
+              Randomuuid: [
+                widget.data['FT'],
+                widget.data['ET'],
+                widget.data['name'],
+                widget.data['roll']
+              ],
+            }
+          };
+          print(newData);
+          await docRef.update(newData);
+          print('Document updated successfully');
+        } else {
+          await _firestore.collection("Booking").doc(widget.data['dor']).set({
+            widget.data['rid']: {
+              Randomuuid: [
+                widget.data['FT'],
+                widget.data['ET'],
+                widget.data['name'],
+                widget.data['roll']
+              ]
+            },
+          }, SetOptions(merge: true));
+        }
+      } else {
+        await _firestore.collection("Booking").doc(widget.data['dor']).set({
+          widget.data['rid']: {
+            Randomuuid: [
+              widget.data['FT'],
+              widget.data['ET'],
+              widget.data['name'],
+              widget.data['roll']
+            ]
+          },
+        }, SetOptions(merge: true));
+      }
+
+      Showsnackbar(
+          context: context,
+          contentType: ContentType.success,
+          title: "Accpect",
+          message: "${widget.data['name']} request haas been updated");
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
   }
 
   Widget build(BuildContext context) {

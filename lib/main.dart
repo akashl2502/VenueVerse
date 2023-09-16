@@ -23,6 +23,7 @@ class _MyAppState extends State<MyApp> {
   bool _exitsuser = false;
   bool _user = false;
   String uid = '';
+  String email = '';
   @override
   void initState() {
     final user = FirebaseAuth.instance.currentUser;
@@ -31,6 +32,7 @@ class _MyAppState extends State<MyApp> {
         _isloading = false;
         uid = user.uid;
         _exitsuser = true;
+        email = user.email!;
       });
     } else {
       setState(() {
@@ -60,7 +62,12 @@ class _MyAppState extends State<MyApp> {
             seedColor: Appcolor.firstgreen, primary: Appcolor.firstgreen),
         useMaterial3: true,
       ),
-      home: _exitsuser ? userdetails(uid: uid) : Getstarted(),
+      home: _exitsuser
+          ? userdetails(
+              uid: uid,
+              email: email,
+            )
+          : Getstarted(),
     );
   }
 }

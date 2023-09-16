@@ -1,16 +1,20 @@
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Date.dart';
 import 'package:VenueVerse/pages/Labs.dart';
+import 'package:VenueVerse/pages/Login.dart';
 import 'package:VenueVerse/pages/Privateaccess.dart';
 import 'package:VenueVerse/pages/RequestStatus.dart';
 import 'package:VenueVerse/pages/Seminarhall.dart';
+import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:VenueVerse/pages/ViewRequests.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:intl/intl.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 // var dateindex = 0;
 
@@ -29,12 +33,54 @@ class _HomeState extends State<Home> {
   bool _isloading = true;
   int dateindexselect = 0;
   List Room = [];
+  List Appdata = [];
   final _advancedDrawerController = AdvancedDrawerController();
   @override
+  DateTime now = DateTime.now();
+  bool _isadmin = false;
+  final _auth = FirebaseAuth.instance;
+
   void initState() {
+    var a = DateFormat('yyyy-MM-dd').format(now);
+    Getprebookdata(fordate: a);
+    checkadmin();
     _controller = ScrollController();
 
     super.initState();
+  }
+
+  void checkadmin() {
+    try {
+      if (userdet['isadmin'] == true) {
+        setState(() {
+          _isadmin = true;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> Getprebookdata({fordate}) async {
+    print(fordate);
+    setState(() {
+      _isloading = true;
+    });
+
+    CollectionReference _cat = _firestore.collection("request");
+    Query query = _cat
+        .where("uid", isEqualTo: widget.uid)
+        .where("isapproved", isEqualTo: "Approved")
+        .where('dor', isEqualTo: fordate);
+    QuerySnapshot querySnapshot = await query.get();
+
+    final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
+    print(_docData);
+
+    setState(() {
+      Appdata = _docData;
+      _isloading = false;
+    });
   }
 
   int selectedDateIndex = 0;
@@ -53,8 +99,15 @@ class _HomeState extends State<Home> {
       setState(() {
         selectedDateIndex++;
       });
-      _controller.animateTo((80 * selectedDateIndex).toDouble(),
-          duration: Duration(milliseconds: 300), curve: Curves.easeIn);
+      Getprebookdata(fordate: Getformateddate(dateindex: selectedDateIndex));
+      final centerOffset = (80 * selectedDateIndex) -
+          (_controller.position.viewportDimension / 2);
+
+      _controller.animateTo(
+        centerOffset,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
     }
   }
 
@@ -63,8 +116,16 @@ class _HomeState extends State<Home> {
       setState(() {
         selectedDateIndex--;
       });
-      _controller.animateTo((80 * selectedDateIndex).toDouble(),
-          duration: Duration(milliseconds: 300), curve: Curves.easeIn);
+      Getprebookdata(fordate: Getformateddate(dateindex: selectedDateIndex));
+
+      final centerOffset = (80 * selectedDateIndex) -
+          (_controller.position.viewportDimension / 2);
+
+      _controller.animateTo(
+        centerOffset,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
     }
   }
 
@@ -107,6 +168,8 @@ class _HomeState extends State<Home> {
 
                         return GestureDetector(
                           onTap: () {
+                            Getprebookdata(
+                                fordate: Getformateddate(dateindex: index));
                             setState(() {
                               selectedDateIndex = index;
                               dateindexselect = index;
@@ -167,13 +230,13 @@ class _HomeState extends State<Home> {
   }
 
   @override
+  List<String> valuesDataUrls = [
+    "https://srecspark.org/themes/images/home/home-11.jpg",
+    "https://www.darshan.ac.in/U01/Page/51---08-06-2021-10-58-50.png"
+  ];
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-    List<String> valuesDataUrls = [
-      "https://srecspark.org/themes/images/home/home-11.jpg",
-      "https://www.darshan.ac.in/U01/Page/51---08-06-2021-10-58-50.png"
-    ];
 
     List<Widget> valuesWidget = [];
     for (int i = 0; i < valuesDataUrls.length; i++) {
@@ -265,6 +328,18 @@ class _HomeState extends State<Home> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            actions: [
+              IconButton(
+                  onPressed: () async {
+                    await _auth.signOut().then((value) async {
+                      await GoogleSignIn().signOut().then((value) {
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (context) => Login()));
+                      });
+                    });
+                  },
+                  icon: Icon(Icons.login_outlined))
+            ],
             leading: IconButton(
               onPressed: _handleMenuButtonPressed,
               icon: ValueListenableBuilder<AdvancedDrawerValue>(
@@ -304,121 +379,74 @@ class _HomeState extends State<Home> {
                             height: viewportConstraints.maxHeight * 0.32,
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: DateCarousel(),
+                              child: daterefactor(),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: Text(
-                              'Check Available Venues',
-                              style: GoogleFonts.ysabeau(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 25,
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: valuesWidget.map((widget) {
-                              return Container(
-                                width: width * 0.4,
-                                height: height * 0.15,
-                                child: widget,
-                              );
-                            }).toList(),
-                          ),
-                          SizedBox(
-                            height: 30,
-                          ),
-                          Text(
-                            'Booked Venues',
-                            style: GoogleFonts.ysabeau(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 25,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Container(
-                                      height: height * 0.08,
-                                      width: width * 1,
-                                      decoration: BoxDecoration(
-                                        color: Appcolor.grey,
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 5,
-                                            blurRadius: 7,
-                                            offset: Offset(0, 3),
-                                          ),
-                                        ],
+                          _isloading
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    color: Appcolor.secondgreen,
+                                  ),
+                                )
+                              : Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {},
+                                      child: Text(
+                                        'Check Available Venues',
+                                        style: GoogleFonts.ysabeau(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 25,
+                                        ),
                                       ),
-                                      child: Row(
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: valuesWidget.map((widget) {
+                                        return Container(
+                                          width: width * 0.4,
+                                          height: height * 0.15,
+                                          child: widget,
+                                        );
+                                      }).toList(),
+                                    ),
+                                    SizedBox(
+                                      height: 30,
+                                    ),
+                                    Appdata.length != 0
+                                        ? Text(
+                                            'Booked Venues',
+                                            style: GoogleFonts.ysabeau(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 25,
+                                            ),
+                                          )
+                                        : Container(),
+                                    Appdata.length != 0
+                                        ? SizedBox(
+                                            height: 20,
+                                          )
+                                        : Container(),
+                                    Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Icon(
-                                            Icons.home,
-                                            color: Appcolor.firstgreen,
-                                          ),
-                                          Container(
-                                            width: width * 0.4,
-                                            child: Text(
-                                              "IT Seminar Hall ",
-                                              style: GoogleFonts.ysabeau(
-                                                fontSize: 18,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          Container(
-                                            height: height * 0.04,
-                                            width: width * 0.25,
-                                            decoration: BoxDecoration(
-                                              color: Appcolor.secondgreen,
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.check,
-                                                  size: 15,
-                                                ),
-                                                SizedBox(width: 5.0),
-                                                Text(
-                                                  "Booked",
-                                                  style: GoogleFonts.ysabeau(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ))),
-                            ],
-                          )
-
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: Appdata.map((e) {
+                                          return Bookedvenuerefactor(
+                                            height: height,
+                                            width: width,
+                                            name: e['RN'],
+                                          );
+                                        }).toList())
+                                  ],
+                                )
                           // Uncomment this if you want to display the date:
                           // Text(
                           //   '${date != null ? "${date!.day}-${date!.month}-${date!.year}" : "No selection yet."}',
@@ -488,38 +516,42 @@ class _HomeState extends State<Home> {
                   leading: Icon(Icons.check),
                   title: Text('Request Status'),
                 ),
-                ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageTransition(
-                        type: PageTransitionType.rotate,
-                        child: Viewrequests(),
-                        alignment: Alignment.topCenter,
-                        isIos: true,
-                        duration: Duration(milliseconds: 500),
-                      ),
-                    );
-                  },
-                  leading: Icon(Icons.remove_red_eye),
-                  title: Text('View Requests'),
-                ),
-                ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageTransition(
-                        type: PageTransitionType.rotate,
-                        child: Private(),
-                        alignment: Alignment.topCenter,
-                        isIos: true,
-                        duration: Duration(milliseconds: 500),
-                      ),
-                    );
-                  },
-                  leading: Icon(Icons.settings),
-                  title: Text('Private Access'),
-                ),
+                _isadmin
+                    ? ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.rotate,
+                              child: Viewrequests(),
+                              alignment: Alignment.topCenter,
+                              isIos: true,
+                              duration: Duration(milliseconds: 500),
+                            ),
+                          );
+                        },
+                        leading: Icon(Icons.remove_red_eye),
+                        title: Text('View Requests'),
+                      )
+                    : Container(),
+                _isadmin
+                    ? ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.rotate,
+                              child: Private(),
+                              alignment: Alignment.topCenter,
+                              isIos: true,
+                              duration: Duration(milliseconds: 500),
+                            ),
+                          );
+                        },
+                        leading: Icon(Icons.settings),
+                        title: Text('Private Access'),
+                      )
+                    : Container(),
                 Spacer(),
                 DefaultTextStyle(
                   style: TextStyle(
@@ -545,8 +577,8 @@ class _HomeState extends State<Home> {
     _advancedDrawerController.showDrawer();
   }
 
-  String Getformateddate() {
-    DateTime dateTime = DateTime.now().add(Duration(days: dateindexselect));
+  String Getformateddate({dateindex}) {
+    DateTime dateTime = DateTime.now().add(Duration(days: dateindex));
     String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
     return formattedDate;
   }
@@ -556,7 +588,8 @@ class _HomeState extends State<Home> {
       context,
       PageTransition(
         type: PageTransitionType.rotate,
-        child: Seminarhall(Selectdate: Getformateddate()),
+        child: Seminarhall(
+            Selectdate: Getformateddate(dateindex: dateindexselect)),
         alignment: Alignment.topCenter,
         isIos: true,
         duration: Duration(milliseconds: 500),
@@ -569,12 +602,89 @@ class _HomeState extends State<Home> {
       context,
       PageTransition(
         type: PageTransitionType.rotate,
-        child: Labs(Selectdate: Getformateddate()),
+        child: Labs(Selectdate: Getformateddate(dateindex: dateindexselect)),
         alignment: Alignment.topCenter,
         isIos: true,
         duration: Duration(milliseconds: 500),
       ),
     );
+  }
+}
+
+class Bookedvenuerefactor extends StatelessWidget {
+  const Bookedvenuerefactor(
+      {super.key,
+      required this.height,
+      required this.width,
+      required this.name});
+  final name;
+  final double height;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+        child: Container(
+            height: height * 0.08,
+            width: width * 1,
+            decoration: BoxDecoration(
+              color: Appcolor.grey,
+              borderRadius: BorderRadius.circular(10.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Icon(
+                  Icons.home,
+                  color: Appcolor.firstgreen,
+                ),
+                Container(
+                  width: width * 0.4,
+                  child: Text(
+                    name,
+                    style: GoogleFonts.ysabeau(
+                      fontSize: 18,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  height: height * 0.04,
+                  width: width * 0.25,
+                  decoration: BoxDecoration(
+                    color: Appcolor.secondgreen,
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.check,
+                        size: 15,
+                      ),
+                      SizedBox(width: 5.0),
+                      Text(
+                        "Booked",
+                        style: GoogleFonts.ysabeau(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )));
   }
 }
 

@@ -33,11 +33,15 @@ class _LoginState extends State<Login> {
       );
       await _auth.signInWithCredential(credential).then((value) {
         var a = value.user!.uid;
+        var email = value.user!.email;
         Navigator.pushReplacement(
           context,
           PageTransition(
             type: PageTransitionType.rotate,
-            child: userdetails(uid: a),
+            child: userdetails(
+              uid: a,
+              email: email,
+            ),
             alignment: Alignment.topCenter,
             isIos: true,
             duration: Duration(milliseconds: 500),

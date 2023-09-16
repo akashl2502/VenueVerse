@@ -1,3 +1,4 @@
+import 'package:VenueVerse/components/Bookvenue.dart';
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Rooms.dart';
 import 'package:VenueVerse/components/Snackbar.dart';
@@ -60,7 +61,10 @@ class _SeminarhallState extends State<Seminarhall> {
               child: SingleChildScrollView(
               physics: BouncingScrollPhysics(),
               child: StreamBuilder(
-                  stream: _firestore.collection('Booking').snapshots(),
+                  stream: _firestore
+                      .collection('Booking')
+                      .doc(widget.Selectdate)
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
@@ -81,17 +85,33 @@ class _SeminarhallState extends State<Seminarhall> {
                     //   );
                     // }
 
-                    final orderDocs = snapshot.data!.docs;
+                    final orderDocs = snapshot.data;
+                    final bookrecord = orderDocs?.data();
+                    List<Widget> Bookinglist = [];
+                    // print(bookrecord);
+                    // for (Map i in Rooms) {
+                    //   if (bookrecord!.containsKey(i['uid'])) {
+                    //     List timeslot = bookrecord[i['uid']].values.toList();
+                    //   }
+                    // }
+
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: Rooms.map((e) {
+                        List timeslot = [];
+                        if (bookrecord != null && bookrecord.isNotEmpty) {
+                          if (bookrecord.containsKey(e['uid'])) {
+                            timeslot = bookrecord[e['uid']].values.toList();
+                          }
+                        }
                         return Hallrefactor(
                           width: width,
                           height: height,
                           name: e['name'],
                           selectdate: widget.Selectdate,
                           uid: e['uid'],
+                          timeslot: timeslot,
                         );
                       }).toList(),
                     );
@@ -108,8 +128,9 @@ class Hallrefactor extends StatefulWidget {
       required this.height,
       required this.name,
       required this.selectdate,
-      required this.uid});
-
+      required this.uid,
+      required this.timeslot});
+  final List timeslot;
   final double width;
   final double height;
   final String name;
@@ -120,11 +141,11 @@ class Hallrefactor extends StatefulWidget {
 }
 
 class _HallrefactorState extends State<Hallrefactor> {
-  TimeOfDay? selectedTime;
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
+    print(widget.timeslot);
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
         child: Container(
@@ -177,18 +198,16 @@ class _HallrefactorState extends State<Hallrefactor> {
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: OutlinedButton(
                         onPressed: () {
-                          _pickTime();
-                          // showDialog(
-                          //   context: context,
-                          //   builder: (context) => CustomPopupDialog(
-                          //     title: "Select Time",
-                          //     confirmButtonText: "Confirm",
-                          //     onConfirm: (selectedTime) {
-                          //       // Handle the selected time here
-                          //       print("Selected Time: $selectedTime");
-                          //     },
-                          //   ),
-                          // );
+                          List timeslot = [];
+                          for (var i in widget.timeslot) {
+                            timeslot.add([i[0], i[1]]);
+                          }
+                          Picktime_Bookvenue(
+                              context: context,
+                              name: widget.name,
+                              selectdate: widget.selectdate,
+                              uid: widget.uid,
+                              timeslot: timeslot);
                         },
                         child: Text('Book'),
                         style: OutlinedButton.styleFrom(
@@ -203,146 +222,12 @@ class _HallrefactorState extends State<Hallrefactor> {
                     )
                   ],
                 ),
-                SizedBox(height: 8.0), // To provide some space at the bottom.
+                SizedBox(height: 8.0),
+                for (var i in widget.timeslot)
+                  Text("${i[2]}(${i[3]}) has booked from ${i[0]} to ${i[1]}")
               ],
             ),
           ),
         ));
-  }
-
-  Future<void> _pickTime() async {
-    final now = TimeOfDay.now();
-    final startTime = TimeOfDay(hour: 9, minute: 0);
-    final endTime = TimeOfDay(hour: 17, minute: 0);
-
-    TimeOfDay? timeS;
-    TimeOfDay? timeE;
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Select Start Time"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton(
-                onPressed: () async {
-                  timeS = await showTimePicker(
-                    context: context,
-                    initialTime: selectedTime ?? now,
-                    builder: (BuildContext context, Widget? child) {
-                      return MediaQuery(
-                        data: MediaQuery.of(context)
-                            .copyWith(alwaysUse24HourFormat: false),
-                        child: child!,
-                      );
-                    },
-                  );
-
-                  Navigator.of(context).pop();
-                },
-                child: Text("Pick Time"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Select End Time"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton(
-                onPressed: () async {
-                  timeE = await showTimePicker(
-                    context: context,
-                    initialTime: selectedTime ?? now,
-                    builder: (BuildContext context, Widget? child) {
-                      return MediaQuery(
-                        data: MediaQuery.of(context)
-                            .copyWith(alwaysUse24HourFormat: false),
-                        child: child!,
-                      );
-                    },
-                  );
-
-                  Navigator.of(context).pop();
-                },
-                child: Text("Pick Time"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (timeS != null && timeE != null) {
-      final selectedDateTimeStart = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        timeS!.hour,
-        timeS!.minute,
-      );
-
-      final selectedDateTimeEnd = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        timeE!.hour,
-        timeE!.minute,
-      );
-
-      final startDateTime = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        startTime.hour,
-        startTime.minute,
-      );
-
-      final endDateTime = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        endTime.hour,
-        endTime.minute,
-      );
-
-      if (selectedDateTimeStart.isBefore(startDateTime) ||
-          selectedDateTimeStart.isAfter(endDateTime) ||
-          selectedDateTimeEnd.isBefore(startDateTime) ||
-          selectedDateTimeEnd.isAfter(endDateTime)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Please select times between 9 AM and 5 PM."),
-          ),
-        );
-      } else {
-        var a = timeS!.hour.toString() + ":" + timeS!.minute.toString();
-        var b = timeE!.hour.toString() + ":" + timeE!.minute.toString();
-        await _firestore.collection("request").add({
-          "dor": widget.selectdate,
-          "did": userdet['did'],
-          'name': userdet['name'],
-          'roll': userdet['registerno'],
-          'uid': userdet['uid'],
-          'FT': a,
-          'ET': b,
-          'isapproved': 'pending',
-          'dept': userdet['dept'],
-          'rid': widget.uid,
-          'RN': widget.name
-        }).then((value) {
-          print('Data Pushed');
-        });
-      }
-    }
   }
 }

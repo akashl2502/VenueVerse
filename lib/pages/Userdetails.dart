@@ -15,8 +15,9 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 Map userdet = {};
 
 class userdetails extends StatefulWidget {
-  const userdetails({required this.uid});
+  const userdetails({required this.uid, required this.email});
   final uid;
+  final email;
   @override
   State<userdetails> createState() => _userdetailsState();
 }
@@ -25,7 +26,7 @@ class _userdetailsState extends State<userdetails> {
   @override
   void initState() {
     Checkuser(uid: widget.uid);
-
+    _Emailcon.text = widget.email;
     super.initState();
   }
 
@@ -183,6 +184,7 @@ class _userdetailsState extends State<userdetails> {
                     SizedBox(height: 20),
                     TextFormField(
                       controller: _Emailcon,
+                      enabled: false,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: 'Email ID',
