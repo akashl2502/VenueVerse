@@ -69,16 +69,26 @@ class _HomeState extends State<Home> {
 
     CollectionReference _cat = _firestore.collection("request");
     Query query = _cat
-        .where("uid", isEqualTo: widget.uid)
         .where("isapproved", isEqualTo: "Approved")
         .where('dor', isEqualTo: fordate);
     QuerySnapshot querySnapshot = await query.get();
 
     final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
-    print(_docData);
+    List<Map<String, dynamic>> uniqueList = [];
+
+    Set<String> uniqueRids = {};
+
+    for (var item in _docData) {
+      if (item != null && item is Map<String, dynamic>) {
+        if (!uniqueRids.contains(item['rid'])) {
+          uniqueRids.add(item['rid']);
+          uniqueList.add(item);
+        }
+      }
+    }
 
     setState(() {
-      Appdata = _docData;
+      Appdata = uniqueList;
       _isloading = false;
     });
   }

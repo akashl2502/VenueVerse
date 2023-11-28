@@ -43,7 +43,9 @@ class _userdetailsState extends State<userdetails> {
     "AERO",
     "CDPD",
     "BME",
-    "NANO"
+    "NANO",
+    "ESTATE OFFICER",
+    "LIBRARY MANAGEMENT"
   ];
   TextEditingController _namecon = TextEditingController();
   TextEditingController _Registercon = TextEditingController();

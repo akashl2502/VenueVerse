@@ -1,3 +1,4 @@
+import 'package:VenueVerse/Api/Cloudpush.dart';
 import 'package:VenueVerse/components/Snackbar.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -102,8 +103,10 @@ class Requestcard extends StatefulWidget {
 class _RequestcardState extends State<Requestcard> {
   @override
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   Future<void> Actorrej({action}) async {
+    if (!mounted) {
+      return null;
+    }
     await _firestore
         .collection('request')
         .doc(widget.docid)
@@ -111,11 +114,35 @@ class _RequestcardState extends State<Requestcard> {
       if (action == "Approved") {
         updateBooking();
       } else {
-        Showsnackbar(
-            context: context,
-            contentType: ContentType.failure,
-            title: "Rejected",
-            message: "${widget.data['name']} request haas been updated");
+        // Showsnackbar(
+        //     context: context,
+        //     contentType: ContentType.failure,
+        //     title: "Rejected",
+        //     message: "${widget.data['name']} request haas been updated");
+      }
+      try {
+        CollectionReference _cat = _firestore.collection("Userdetails");
+        Query query = _cat.where("uid", isEqualTo: widget.data['uid']);
+        QuerySnapshot querySnapshot = await query.get();
+        final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+        final temp = querySnapshot.docs.map((doc) => doc.data()).toList();
+        print(temp);
+        if (temp.isNotEmpty) {
+          var fcm = (temp[0] as Map<String, dynamic>)['fcm'];
+          print(fcm);
+          try {
+            sendPushNotification(
+                registration_token: fcm,
+                title: "Request Status",
+                body: "Your Request Has been ${action} by department");
+          } catch (e) {
+            print(e);
+            print("Api error");
+          }
+        }
+      } catch (e) {
+        print(e);
       }
     });
   }
@@ -184,6 +211,8 @@ class _RequestcardState extends State<Requestcard> {
   }
 
   Widget build(BuildContext context) {
+    print(widget.data);
+
     return Container(
       width: widget.width,
       decoration: BoxDecoration(
@@ -250,7 +279,7 @@ class _RequestcardState extends State<Requestcard> {
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    Actorrej(action: "Denied");
+                    Actorrej(action: "denied");
                   },
                   icon: Icon(Icons.close),
                   label: Text("Reject"),

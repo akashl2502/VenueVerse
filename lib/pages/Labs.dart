@@ -1,5 +1,8 @@
+import 'package:VenueVerse/components/Bookvenue.dart';
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Rooms.dart';
+import 'package:VenueVerse/pages/Peekinside.dart';
+import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,7 +57,10 @@ class _LabsState extends State<Labs> {
               child: SingleChildScrollView(
               physics: BouncingScrollPhysics(),
               child: StreamBuilder(
-                  stream: _firestore.collection('Booking').snapshots(),
+                  stream: _firestore
+                      .collection('Booking')
+                      .doc(widget.Selectdate)
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
@@ -66,24 +72,30 @@ class _LabsState extends State<Labs> {
                         children: [
                           Center(child: Text('Error: ${snapshot.error}'))
                         ],
-                      ); // If there's an error
+                      );
                     }
-                    // else if (!snapshot.hasData ||
-                    //     snapshot.data!.docs.isEmpty) {
-                    //   return Column(
-                    //     children: [Center(child: Text('No data available.'))],
-                    //   );
-                    // }
 
-                    final orderDocs = snapshot.data!.docs;
+                    final orderDocs = snapshot.data;
+                    final bookrecord = orderDocs?.data();
+                    List<Widget> Bookinglist = [];
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: Rooms.map((e) {
-                        return Labsrefacctor(
+                        List timeslot = [];
+                        if (bookrecord != null && bookrecord.isNotEmpty) {
+                          if (bookrecord.containsKey(e['uid'])) {
+                            timeslot = bookrecord[e['uid']].values.toList();
+                          }
+                        }
+                        return Labsrefactor(
+                          dept: e['dept'],
                           width: width,
                           height: height,
                           name: e['name'],
+                          selectdate: widget.Selectdate,
+                          uid: e['uid'],
+                          timeslot: timeslot,
                         );
                       }).toList(),
                     );
@@ -93,22 +105,37 @@ class _LabsState extends State<Labs> {
   }
 }
 
-class Labsrefacctor extends StatelessWidget {
-  const Labsrefacctor(
+class Labsrefactor extends StatefulWidget {
+  const Labsrefactor(
       {super.key,
+      required this.dept,
       required this.width,
       required this.height,
-      required this.name});
-
+      required this.name,
+      required this.selectdate,
+      required this.uid,
+      required this.timeslot});
+  final List timeslot;
   final double width;
   final double height;
-  final name;
+  final String name;
+  final dept;
+  final uid;
+  final selectdate;
+  @override
+  State<Labsrefactor> createState() => _LabsrefactorState();
+}
+
+class _LabsrefactorState extends State<Labsrefactor> {
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
+    print(widget.timeslot);
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
         child: Container(
-          width: width,
+          width: widget.width,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8.0),
@@ -128,61 +155,100 @@ class Labsrefacctor extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    'https://www.christenseninstitute.org/wp-content/uploads/2018/06/Computer-lab_800x400.jpg',
-                    height: (height * 0.25) * 0.65,
-                    width: width,
+                  child: Image.asset(
+                    "assets/labs.jpg",
+                    height: (widget.height * 0.25) * 0.65,
+                    width: widget.width,
                     fit: BoxFit.cover,
                   ),
                 ),
                 SizedBox(
                     height:
                         8.0), // To provide some space between the image and the row.
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
                   children: [
-                    Container(
-                      width: width * 0.5, // 80% of the width
-                      child: Text(
-                        name.toString(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.ysabeau(
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: widget.width *0.8, // 80% of the width
+                          child: Text(
+                            widget.name,
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.ysabeau(
+                                fontSize: 23,
+                                fontWeight: FontWeight.bold,
+                                textBaseline: TextBaseline.ideographic),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: OutlinedButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => CustomPopupDialog(
-                              title: "Select Time",
-                              confirmButtonText: "Confirm",
-                              onConfirm: (selectedTime) {
-                                // Handle the selected time here
-                                print("Selected Time: $selectedTime");
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: OutlinedButton(
+                              onPressed: () {
+                                List timeslot = [];
+                                for (var i in widget.timeslot) {
+                                  timeslot.add([i[0], i[1]]);
+                                }
+                                Picktime_Bookvenue(
+                                    dept: widget.dept,
+                                    context: context,
+                                    name: widget.name,
+                                    selectdate: widget.selectdate,
+                                    uid: widget.uid,
+                                    timeslot: timeslot,
+                                    hname: widget.name,
+                                    uname: userdet['name']);
                               },
+                              child: Text('Book'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 1.0, vertical: 2.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                side:
+                                    BorderSide(width: 1.0, color: Colors.black),
+                              ),
                             ),
-                          );
-                        },
-                        child: Text('Book'),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 1.0, vertical: 2.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
                           ),
-                          side: BorderSide(width: 1.0, color: Colors.black),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 10),
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            Peekinside(list: widget.timeslot)));
+                              },
+                              child: Text('Peek Inside'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 2.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                side:
+                                    BorderSide(width: 1.0, color: Colors.black),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     )
                   ],
                 ),
-                SizedBox(height: 8.0), // To provide some space at the bottom.
               ],
             ),
           ),

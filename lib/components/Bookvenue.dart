@@ -1,8 +1,11 @@
+import 'package:VenueVerse/Api/Cloudpush.dart';
 import 'package:VenueVerse/components/Snackbar.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 
 int timeOfDayToMinutes(TimeOfDay time) {
   return time.hour * 60 + time.minute;
@@ -30,9 +33,9 @@ bool isTimeOverlap(timeSlots, TimeOfDay selectedStart, TimeOfDay selectedEnd) {
 }
 
 Future<void> Picktime_Bookvenue(
-    {context, uid, name, selectdate, timeslot}) async {
+    {context, uid, name, selectdate, timeslot, hname, uname, dept}) async {
   TimeOfDay? selectedTime;
-
+  bool Confirm = false;
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final now = TimeOfDay.now();
   final startTime = TimeOfDay(hour: 9, minute: 0);
@@ -45,7 +48,13 @@ Future<void> Picktime_Bookvenue(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text("Select Start Time"),
+        title: Text(
+          "Pick Start Time",
+          style: GoogleFonts.ysabeau(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -65,7 +74,22 @@ Future<void> Picktime_Bookvenue(
 
                 Navigator.of(context).pop();
               },
-              child: Text("Pick Time"),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Pick Time",
+                      style: GoogleFonts.ysabeau(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Lottie.asset("assets/picktime.json", height: 20),
+                    )
+                  ]),
             ),
           ],
         ),
@@ -77,7 +101,13 @@ Future<void> Picktime_Bookvenue(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text("Select End Time"),
+        title: Text(
+          "Pick End Time",
+          style: GoogleFonts.ysabeau(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -97,7 +127,73 @@ Future<void> Picktime_Bookvenue(
 
                 Navigator.of(context).pop();
               },
-              child: Text("Pick Time"),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Pick Time",
+                      style: GoogleFonts.ysabeau(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Lottie.asset("assets/picktime.json", height: 20),
+                    )
+                  ]),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(
+          "Confirmation",
+          style: GoogleFonts.ysabeau(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Do you want to book this time slot?",
+              style: GoogleFonts.ysabeau(
+                fontSize: 15,
+              ),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Confirm = true;
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    "Yes",
+                    style: TextStyle(color: Colors.green, fontSize: 15),
+                  ),
+                ),
+                SizedBox(width: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    "No",
+                    style: TextStyle(color: Colors.red, fontSize: 15),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -105,7 +201,7 @@ Future<void> Picktime_Bookvenue(
     },
   );
 
-  if (timeS != null && timeE != null) {
+  if (timeS != null && timeE != null && Confirm) {
     final selectedDateTimeStart = DateTime(
       DateTime.now().year,
       DateTime.now().month,
@@ -142,9 +238,14 @@ Future<void> Picktime_Bookvenue(
         selectedDateTimeStart.isAfter(endDateTime) ||
         selectedDateTimeEnd.isBefore(startDateTime) ||
         selectedDateTimeEnd.isAfter(endDateTime)) {
+      Showsnackbar(
+          context: context,
+          contentType: ContentType.failure,
+          title: "Restricted Time Slot",
+          message: "Please select times between 9 AM and 5 PM.");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Please select times between 9 AM and 5 PM."),
+          content: Text(""),
         ),
       );
     } else {
@@ -165,7 +266,7 @@ Future<void> Picktime_Bookvenue(
           'FT': a,
           'ET': b,
           'isapproved': 'pending',
-          'dept': userdet['dept'],
+          'dept': dept,
           'rid': uid,
           'RN': name,
           "timestamp": FieldValue.serverTimestamp()
@@ -176,6 +277,33 @@ Future<void> Picktime_Bookvenue(
               title: "Requested",
               message: "your request have been send to department Head");
         });
+
+        try {
+          String searchitem = dept.toString();
+          CollectionReference _cat = _firestore.collection("Admin");
+          Query query = _cat.where("dept", isEqualTo: searchitem);
+          QuerySnapshot querySnapshot = await query.get();
+          final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
+          if (_docData.isNotEmpty) {
+            var email = (_docData[0] as Map<String, dynamic>)['email'];
+            CollectionReference _cat = _firestore.collection("Userdetails");
+            Query query = _cat.where("email", isEqualTo: email);
+            QuerySnapshot querySnapshot = await query.get();
+
+            final temp = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+            if (temp.isNotEmpty) {
+              var fcm = (temp[0] as Map<String, dynamic>)['fcm'];
+              print(fcm);
+              sendPushNotification(
+                  registration_token: fcm,
+                  title: "New Booking Request",
+                  body: "${uname} has request ${hname} for booking");
+            }
+          }
+        } catch (e) {
+          print(e);
+        }
       }
     }
   }

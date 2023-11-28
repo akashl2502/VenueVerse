@@ -1,10 +1,11 @@
 import 'package:VenueVerse/components/Snackbar.dart';
+import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-
+import 'package:uuid/uuid.dart';
 import '../components/Colors.dart';
 import '../components/Custompopup.dart';
 
@@ -16,23 +17,8 @@ class Private extends StatefulWidget {
 class _PrivateState extends State<Private> {
   @override
   void initState() {
-    // getdata();
     super.initState();
   }
-
-  // List Admindata = [];
-  // Future<void> getdata() async {
-  //   try {
-  //     QuerySnapshot a = await _firestore.collection("Admin").get();
-  //     final data = a.docs.map((doc) => [doc.data(), doc.id]).toList();
-  //     setState(() {
-  //       Admindata = data;
-  //       _isloading = false;
-  //     });
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isloading = false;
@@ -40,6 +26,137 @@ class _PrivateState extends State<Private> {
     {'email': 'akash.2011003@srec.ac.in', 'department': 'AI&DS'},
     {'email': 'prasath.2011031@srec.ac.in', 'department': 'IT'},
   ];
+  void UpdateArray({required Map<String, dynamic> newMap, required hname}) {
+    print(hname);
+    setState(() {
+      _isloading = true;
+    });
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String documentID = 'OS4SmHTi9m3awkhAZrb8';
+    DocumentReference documentRef =
+        firestore.collection('Rooms').doc(documentID);
+    firestore.runTransaction((Transaction transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(documentRef);
+      if (snapshot.exists) {
+        Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+
+        if (data != null) {
+          List<dynamic> halles = data[hname] ?? [];
+          halles.add(newMap);
+          transaction.update(documentRef, {hname: halles});
+        }
+      }
+    }).then((_) {
+      setState(() {
+        _isloading = false;
+      });
+      Showsnackbar(
+          context: context,
+          contentType: ContentType.success,
+          title: "Updated",
+          message: "New data has been updated");
+    }).catchError((error) {
+      print(error);
+      setState(() {
+        _isloading = false;
+      });
+      Showsnackbar(
+          context: context,
+          contentType: ContentType.failure,
+          title: "Failed",
+          message: "Failed to update data");
+    });
+  }
+
+  Future<void> ShowAlertbox() async {
+    String hallName = '';
+    String selectedHall = 'Halls';
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            "Confirmation",
+            style: GoogleFonts.ysabeau(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                onChanged: (name) {
+                  hallName = name;
+                },
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                ),
+              ),
+              SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: selectedHall,
+                items: ['Halls', 'Labs'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  selectedHall = newValue.toString();
+                },
+                decoration: InputDecoration(),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      var uuid = Uuid();
+                      String Randomuuid = uuid.v4();
+                      Map<String, dynamic> newMap = {
+                        'dept': userdet['dept'],
+                        "name": hallName,
+                        'uid': Randomuuid
+                      };
+                      if (hallName.isNotEmpty) {
+                        UpdateArray(newMap: newMap, hname: selectedHall);
+                        Navigator.of(context).pop();
+                      } else {
+                        Showsnackbar(
+                            context: context,
+                            contentType: ContentType.warning,
+                            title: "Important",
+                            message: "Name should not be empty");
+                      }
+                    },
+                    child: Text(
+                      "Add",
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +165,13 @@ class _PrivateState extends State<Private> {
           centerTitle: true,
           backgroundColor: Appcolor.secondgreen,
           foregroundColor: Colors.white,
-          // actions: [IconButton(onPressed: () {}, icon: Icon(Icons.add))],
+          actions: [
+            IconButton(
+                onPressed: () {
+                  ShowAlertbox();
+                },
+                icon: Icon(Icons.add))
+          ],
         ),
         body: _isloading
             ? Center(
@@ -176,7 +299,13 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
             ),
           )
         : AlertDialog(
-            title: Text('Update Email'),
+            title: Text(
+              "Update Email",
+              style: GoogleFonts.ysabeau(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             content: Container(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

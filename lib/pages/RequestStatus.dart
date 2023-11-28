@@ -28,7 +28,6 @@ class _RequestState extends State<Request> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 18),
           child: SingleChildScrollView(
-            // Wrap with SingleChildScrollView
             child: StreamBuilder(
                 stream: _firestore
                     .collection('request')
@@ -91,6 +90,7 @@ class Viewrequestcard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       width: width,
       decoration: BoxDecoration(
         color: Colors.white,

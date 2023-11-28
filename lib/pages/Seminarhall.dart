@@ -2,6 +2,7 @@ import 'package:VenueVerse/components/Bookvenue.dart';
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Rooms.dart';
 import 'package:VenueVerse/components/Snackbar.dart';
+import 'package:VenueVerse/pages/Peekinside.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -76,24 +77,13 @@ class _SeminarhallState extends State<Seminarhall> {
                         children: [
                           Center(child: Text('Error: ${snapshot.error}'))
                         ],
-                      ); // If there's an error
+                      );
                     }
-                    // else if (!snapshot.hasData ||
-                    //     snapshot.data!.docs.isEmpty) {
-                    //   return Column(
-                    //     children: [Center(child: Text('No data available.'))],
-                    //   );
-                    // }
 
                     final orderDocs = snapshot.data;
                     final bookrecord = orderDocs?.data();
+
                     List<Widget> Bookinglist = [];
-                    // print(bookrecord);
-                    // for (Map i in Rooms) {
-                    //   if (bookrecord!.containsKey(i['uid'])) {
-                    //     List timeslot = bookrecord[i['uid']].values.toList();
-                    //   }
-                    // }
 
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -112,6 +102,7 @@ class _SeminarhallState extends State<Seminarhall> {
                           selectdate: widget.Selectdate,
                           uid: e['uid'],
                           timeslot: timeslot,
+                          dept: e['dept'],
                         );
                       }).toList(),
                     );
@@ -124,6 +115,7 @@ class _SeminarhallState extends State<Seminarhall> {
 class Hallrefactor extends StatefulWidget {
   const Hallrefactor(
       {super.key,
+      required this.dept,
       required this.width,
       required this.height,
       required this.name,
@@ -134,6 +126,7 @@ class Hallrefactor extends StatefulWidget {
   final double width;
   final double height;
   final String name;
+  final dept;
   final uid;
   final selectdate;
   @override
@@ -169,8 +162,8 @@ class _HallrefactorState extends State<Hallrefactor> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5p9dK3e3YMC-Wpks6xCk_nx47AqtnVasd4Q&usqp=CAU',
+                  child: Image.asset(
+                    'assets/halls.jpeg',
                     height: (widget.height * 0.25) * 0.65,
                     width: widget.width,
                     fit: BoxFit.cover,
@@ -179,52 +172,90 @@ class _HallrefactorState extends State<Hallrefactor> {
                 SizedBox(
                     height:
                         8.0), // To provide some space between the image and the row.
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
                   children: [
-                    Container(
-                      width: widget.width * 0.5, // 80% of the width
-                      child: Text(
-                        widget.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.ysabeau(
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: widget.width * 0.8, // 80% of the width
+                          child: Text(
+                            widget.name,
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.ysabeau(
+                                fontSize: 23,
+                                fontWeight: FontWeight.bold,
+                                textBaseline: TextBaseline.ideographic),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: OutlinedButton(
-                        onPressed: () {
-                          List timeslot = [];
-                          for (var i in widget.timeslot) {
-                            timeslot.add([i[0], i[1]]);
-                          }
-                          Picktime_Bookvenue(
-                              context: context,
-                              name: widget.name,
-                              selectdate: widget.selectdate,
-                              uid: widget.uid,
-                              timeslot: timeslot);
-                        },
-                        child: Text('Book'),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 1.0, vertical: 2.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: OutlinedButton(
+                              onPressed: () {
+                                List timeslot = [];
+                                for (var i in widget.timeslot) {
+                                  timeslot.add([i[0], i[1]]);
+                                }
+                                Picktime_Bookvenue(
+                                    dept: widget.dept,
+                                    context: context,
+                                    name: widget.name,
+                                    selectdate: widget.selectdate,
+                                    uid: widget.uid,
+                                    timeslot: timeslot,
+                                    hname: widget.name,
+                                    uname: userdet['name']);
+                              },
+                              child: Text('Book'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 1.0, vertical: 2.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                side:
+                                    BorderSide(width: 1.0, color: Colors.black),
+                              ),
+                            ),
                           ),
-                          side: BorderSide(width: 1.0, color: Colors.black),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 10),
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            Peekinside(list: widget.timeslot)));
+                              },
+                              child: Text('Peek Inside'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 2.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                side:
+                                    BorderSide(width: 1.0, color: Colors.black),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     )
                   ],
                 ),
-                SizedBox(height: 8.0),
-                for (var i in widget.timeslot)
-                  Text("${i[2]}(${i[3]}) has booked from ${i[0]} to ${i[1]}")
               ],
             ),
           ),
