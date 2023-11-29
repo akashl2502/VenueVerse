@@ -1,8 +1,10 @@
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Date.dart';
+import 'package:VenueVerse/pages/About.dart';
 import 'package:VenueVerse/pages/Labs.dart';
 import 'package:VenueVerse/pages/Login.dart';
 import 'package:VenueVerse/pages/Privateaccess.dart';
+import 'package:VenueVerse/pages/Report.dart';
 import 'package:VenueVerse/pages/RequestStatus.dart';
 import 'package:VenueVerse/pages/Seminarhall.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
@@ -51,7 +53,7 @@ class _HomeState extends State<Home> {
 
   void checkadmin() {
     try {
-      if (userdet['isadmin'] == true) {
+      if (userdet['isadmin'] == true || userdet['SA'] == true) {
         setState(() {
           _isadmin = true;
         });
@@ -75,9 +77,8 @@ class _HomeState extends State<Home> {
 
     final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
     List<Map<String, dynamic>> uniqueList = [];
-
     Set<String> uniqueRids = {};
-
+    print(uniqueRids);
     for (var item in _docData) {
       if (item != null && item is Map<String, dynamic>) {
         if (!uniqueRids.contains(item['rid'])) {
@@ -101,7 +102,7 @@ class _HomeState extends State<Home> {
     DateTime firstDayOfNextMonth = DateTime(now.year, now.month + 1, 1);
     DateTime lastDayOfCurrentMonth =
         firstDayOfNextMonth.subtract(Duration(days: 1));
-    return lastDayOfCurrentMonth.day - now.day + 10;
+    return lastDayOfCurrentMonth.day - now.day + 300;
   }
 
   void swipeToNextDate() {
@@ -199,7 +200,7 @@ class _HomeState extends State<Home> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  currentDate.weekdayName,
+                                  currentDate.monthName.substring(0, 3),
                                   style: GoogleFonts.ysabeau(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
@@ -562,6 +563,40 @@ class _HomeState extends State<Home> {
                         title: Text('Private Access'),
                       )
                     : Container(),
+                _isadmin
+                    ? ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.rotate,
+                              child: ReportPage(),
+                              alignment: Alignment.topCenter,
+                              isIos: true,
+                              duration: Duration(milliseconds: 500),
+                            ),
+                          );
+                        },
+                        leading: Icon(Icons.file_copy),
+                        title: Text('Report'),
+                      )
+                    : Container(),
+                ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageTransition(
+                        type: PageTransitionType.rotate,
+                        child: Aboutpage(),
+                        alignment: Alignment.topCenter,
+                        isIos: true,
+                        duration: Duration(milliseconds: 500),
+                      ),
+                    );
+                  },
+                  leading: Icon(Icons.info),
+                  title: Text('About'),
+                ),
                 Spacer(),
                 DefaultTextStyle(
                   style: TextStyle(

@@ -22,7 +22,15 @@
           }
         },
         {
-          "client_id": "1014878134478-7kpa99qvic1o1peo344ljrs8aajqrh67.apps.googleusercontent.com",
+          "client_id": "1014878134478-t9ujc2o67b4fo5r6c5n8b85foof2psgv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.Venueverse",
+            "certificate_hash": "3edd72ecf216a0a55d1187837cbd5e5b54c700ff"
+          }
+        },
+        {
+          "client_id": "1014878134478-1g6ot2th80r7emvhqugg9qo9tmvjjl3b.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -35,7 +43,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1014878134478-7kpa99qvic1o1peo344ljrs8aajqrh67.apps.googleusercontent.com",
+              "client_id": "1014878134478-1g6ot2th80r7emvhqugg9qo9tmvjjl3b.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

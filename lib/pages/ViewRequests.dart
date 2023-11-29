@@ -127,15 +127,17 @@ class _RequestcardState extends State<Requestcard> {
         final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
 
         final temp = querySnapshot.docs.map((doc) => doc.data()).toList();
-        print(temp);
         if (temp.isNotEmpty) {
           var fcm = (temp[0] as Map<String, dynamic>)['fcm'];
           print(fcm);
           try {
             sendPushNotification(
+                email: widget.data['email'],
+                state: 1,
                 registration_token: fcm,
                 title: "Request Status",
-                body: "Your Request Has been ${action} by department");
+                body:
+                    "Your Request for ${widget.data['RN']} Has been ${action} by department");
           } catch (e) {
             print(e);
             print("Api error");
@@ -238,7 +240,6 @@ class _RequestcardState extends State<Requestcard> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Flexible(
-                    // Wrap the Text widget with another Flexible
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 5.0),
                       child: Text(
@@ -248,12 +249,12 @@ class _RequestcardState extends State<Requestcard> {
                           height: 2,
                           fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 3,
-
-                        textAlign: TextAlign.center, // Define a max line count
+                        maxLines: 10,
+                        textAlign: TextAlign.center,
                         overflow:
                             TextOverflow.ellipsis, // Use ellipsis for overflow
-                        softWrap: true, // Enable soft line wrap
+                        // Remove or set softWrap to false
+                        // softWrap: true,
                       ),
                     ),
                   ),

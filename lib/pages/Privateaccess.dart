@@ -5,9 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import '../components/Colors.dart';
 import '../components/Custompopup.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Private extends StatefulWidget {
   @override
@@ -68,91 +72,280 @@ class _PrivateState extends State<Private> {
     });
   }
 
+  Future<String> uploadImage(File? image) async {
+    if (image == null) {
+      return ''; // Return empty string if no image is selected
+    }
+
+    FirebaseStorage storage = FirebaseStorage.instance;
+    Reference storageReference = storage.ref().child('images/${Uuid().v4()}');
+
+    UploadTask uploadTask = storageReference.putFile(image);
+    await uploadTask.whenComplete(() => print('Image uploaded'));
+
+    String imageUrl = await storageReference.getDownloadURL();
+    return imageUrl;
+  }
+
   Future<void> ShowAlertbox() async {
     String hallName = '';
+    String seatNumber = '';
+    String notes = '';
     String selectedHall = 'Halls';
+    bool projector = false;
+    bool audioSystem = false;
+    bool airCondition = false;
+    File? selectedImage;
+    bool storagePermissionGranted = false;
 
+    var storageStatus = await Permission.storage.status;
+    if (storageStatus.isGranted) {
+      storagePermissionGranted = true;
+    } else {
+      var result = await Permission.storage.request();
+      if (result.isGranted) {
+        storagePermissionGranted = true;
+      } else {
+        Showsnackbar(
+          context: context,
+          contentType: ContentType.warning,
+          title: "Storage Permission",
+          message: "Must be granted permission",
+        );
+        // Future.delayed(Duration(seconds: 2), () {
+        //   Navigator.pop(context);
+        // });
+      }
+    }
+
+    if (!storagePermissionGranted) {
+      Showsnackbar(
+        context: context,
+        contentType: ContentType.warning,
+        title: "Storage Permission",
+        message: "Must be granted permission",
+      );
+      // Future.delayed(Duration(seconds: 2), () {
+      //   Navigator.pop(context);
+      // });
+    }
     await showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            "Confirmation",
-            style: GoogleFonts.ysabeau(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+              "Confirmation",
+              style: GoogleFonts.ysabeau(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                onChanged: (name) {
-                  hallName = name;
-                },
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                ),
-              ),
-              SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: selectedHall,
-                items: ['Halls', 'Labs'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  selectedHall = newValue.toString();
-                },
-                decoration: InputDecoration(),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton(
-                    onPressed: () {
-                      var uuid = Uuid();
-                      String Randomuuid = uuid.v4();
-                      Map<String, dynamic> newMap = {
-                        'dept': userdet['dept'],
-                        "name": hallName,
-                        'uid': Randomuuid
-                      };
-                      if (hallName.isNotEmpty) {
-                        UpdateArray(newMap: newMap, hname: selectedHall);
-                        Navigator.of(context).pop();
-                      } else {
-                        Showsnackbar(
-                            context: context,
-                            contentType: ContentType.warning,
-                            title: "Important",
-                            message: "Name should not be empty");
-                      }
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final ImagePicker _picker = ImagePicker();
+                          final XFile? image = await _picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (image != null) {
+                            setState(() {
+                              selectedImage = File(image.path);
+                            });
+                          }
+                        },
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          color: Colors.grey[200],
+                          child: selectedImage != null
+                              ? Image.file(
+                                  selectedImage!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(
+                                  Icons.camera_alt,
+                                  size: 40,
+                                  color: Colors.grey[600],
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextFormField(
+                    onChanged: (name) {
+                      hallName = name;
                     },
-                    child: Text(
-                      "Add",
-                      style: TextStyle(color: Colors.green),
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
                     ),
                   ),
-                  SizedBox(width: 20),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: selectedHall,
+                    items: ['Halls', 'Labs'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      selectedHall = newValue.toString();
                     },
-                    child: Text(
-                      "Cancel",
-                      style: TextStyle(color: Colors.red),
+                    decoration: InputDecoration(),
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    onChanged: (number) {
+                      seatNumber = number;
+                    },
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Seat Capacity',
                     ),
+                  ),
+                  SizedBox(height: 10),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: projector,
+                            onChanged: (value) {
+                              setState(() {
+                                projector = value!;
+                              });
+                            },
+                          ),
+                          Text('Projector'),
+                        ],
+                      ),
+                      SizedBox(width: 10),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: audioSystem,
+                            onChanged: (value) {
+                              setState(() {
+                                audioSystem = value!;
+                              });
+                            },
+                          ),
+                          Text('Audio System'),
+                        ],
+                      ),
+                      SizedBox(width: 10),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: airCondition,
+                            onChanged: (value) {
+                              setState(() {
+                                airCondition = value!;
+                              });
+                            },
+                          ),
+                          Text('Air Condition'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  TextFormField(
+                    onChanged: (value) {
+                      notes = value;
+                    },
+                    maxLines: 3, // Allows multiple lines
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      labelText: 'Notes',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () async {
+                          var uuid = Uuid();
+                          String Randomuuid = uuid.v4();
+                          Map<String, dynamic> newMap = {
+                            'dept': userdet['dept'],
+                            "name": hallName,
+                            'seatNumber': seatNumber,
+                            'notes': notes,
+                            'projector': projector,
+                            'audio': audioSystem,
+                            'ac': airCondition,
+                            'uid': Randomuuid,
+                          };
+                          var checkimg = selectedImage != null
+                              ? selectedImage!.existsSync()
+                              : false;
+                          if (hallName.isNotEmpty &&
+                              notes.isNotEmpty &&
+                              seatNumber.isNotEmpty &&
+                              checkimg) {
+                            setState(() {
+                              _isloading = true;
+                            });
+                            try {
+                              String imageUrl =
+                                  await uploadImage(selectedImage);
+                              newMap['imageurl'] = imageUrl;
+                              print(newMap);
+                              UpdateArray(newMap: newMap, hname: selectedHall);
+                            } catch (e) {
+                              Showsnackbar(
+                                context: context,
+                                contentType: ContentType.failure,
+                                title: "Important",
+                                message: e.toString(),
+                              );
+                              setState(() {
+                                _isloading = false;
+                              });
+                            }
+                            Navigator.of(context).pop();
+                          } else {
+                            Showsnackbar(
+                              context: context,
+                              contentType: ContentType.warning,
+                              title: "Important",
+                              message: "Name should not be empty",
+                            );
+                          }
+                        },
+                        child: Text(
+                          "Add",
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        );
+            ),
+          );
+        });
       },
     );
   }
@@ -166,11 +359,32 @@ class _PrivateState extends State<Private> {
           backgroundColor: Appcolor.secondgreen,
           foregroundColor: Colors.white,
           actions: [
-            IconButton(
-                onPressed: () {
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'add') {
                   ShowAlertbox();
-                },
-                icon: Icon(Icons.add))
+                } else if (value == 'edit') {
+                  // Handle edit action
+                  // ...
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'add',
+                  child: ListTile(
+                    leading: Icon(Icons.add),
+                    title: Text('Add'),
+                  ),
+                ),
+                // const PopupMenuItem<String>(
+                //   value: 'edit',
+                //   child: ListTile(
+                //     leading: Icon(Icons.edit),
+                //     title: Text('Edit'),
+                //   ),
+                // ),
+              ],
+            ),
           ],
         ),
         body: _isloading

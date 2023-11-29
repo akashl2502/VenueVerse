@@ -33,7 +33,15 @@ bool isTimeOverlap(timeSlots, TimeOfDay selectedStart, TimeOfDay selectedEnd) {
 }
 
 Future<void> Picktime_Bookvenue(
-    {context, uid, name, selectdate, timeslot, hname, uname, dept}) async {
+    {context,
+    uid,
+    name,
+    selectdate,
+    timeslot,
+    hname,
+    uname,
+    dept,
+    email}) async {
   TimeOfDay? selectedTime;
   bool Confirm = false;
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -258,25 +266,30 @@ Future<void> Picktime_Bookvenue(
       } else {
         var a = timeS!.hour.toString() + ":" + timeS!.minute.toString();
         var b = timeE!.hour.toString() + ":" + timeE!.minute.toString();
-        await _firestore.collection("request").add({
-          "dor": selectdate,
-          'name': userdet['name'],
-          'roll': userdet['registerno'],
-          'uid': userdet['uid'],
-          'FT': a,
-          'ET': b,
-          'isapproved': 'pending',
-          'dept': dept,
-          'rid': uid,
-          'RN': name,
-          "timestamp": FieldValue.serverTimestamp()
-        }).then((value) {
-          Showsnackbar(
-              context: context,
-              contentType: ContentType.success,
-              title: "Requested",
-              message: "your request have been send to department Head");
-        });
+        if (a.isNotEmpty && b.isNotEmpty) {
+          DateTime specificDate = DateTime.parse(selectdate);
+          int specificTimestamp = specificDate.millisecondsSinceEpoch;
+          await _firestore.collection("request").add({
+            "dor": selectdate,
+            'name': userdet['name'],
+            'roll': userdet['registerno'],
+            'uid': userdet['uid'],
+            'FT': a,
+            'ET': b,
+            'isapproved': 'pending',
+            'dept': dept,
+            'rid': uid,
+            'RN': name,
+            'datemill': specificTimestamp,
+            'email': email
+          }).then((value) {
+            Showsnackbar(
+                context: context,
+                contentType: ContentType.success,
+                title: "Requested",
+                message: "your request have been send to department Head");
+          });
+        }
 
         try {
           String searchitem = dept.toString();
@@ -285,9 +298,9 @@ Future<void> Picktime_Bookvenue(
           QuerySnapshot querySnapshot = await query.get();
           final _docData = querySnapshot.docs.map((doc) => doc.data()).toList();
           if (_docData.isNotEmpty) {
-            var email = (_docData[0] as Map<String, dynamic>)['email'];
+            var emailid = (_docData[0] as Map<String, dynamic>)['email'];
             CollectionReference _cat = _firestore.collection("Userdetails");
-            Query query = _cat.where("email", isEqualTo: email);
+            Query query = _cat.where("email", isEqualTo: emailid);
             QuerySnapshot querySnapshot = await query.get();
 
             final temp = querySnapshot.docs.map((doc) => doc.data()).toList();
@@ -296,6 +309,8 @@ Future<void> Picktime_Bookvenue(
               var fcm = (temp[0] as Map<String, dynamic>)['fcm'];
               print(fcm);
               sendPushNotification(
+                  email: emailid,
+                  state: 0,
                   registration_token: fcm,
                   title: "New Booking Request",
                   body: "${uname} has request ${hname} for booking");

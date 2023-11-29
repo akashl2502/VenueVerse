@@ -2,6 +2,7 @@ import 'package:VenueVerse/components/Bookvenue.dart';
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Rooms.dart';
 import 'package:VenueVerse/pages/Peekinside.dart';
+import 'package:VenueVerse/pages/Roomdetails.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -89,14 +90,19 @@ class _LabsState extends State<Labs> {
                           }
                         }
                         return Labsrefactor(
-                          dept: e['dept'],
-                          width: width,
-                          height: height,
-                          name: e['name'],
-                          selectdate: widget.Selectdate,
-                          uid: e['uid'],
-                          timeslot: timeslot,
-                        );
+                            dept: e['dept'],
+                            width: width,
+                            height: height,
+                            name: e['name'],
+                            selectdate: widget.Selectdate,
+                            uid: e['uid'],
+                            timeslot: timeslot,
+                            ac: e['ac'],
+                            audio: e['audio'],
+                            projector: e['projector'],
+                            seat: e['seatNumber'],
+                            notes: e['notes'],
+                            img: e['imageurl']);
                       }).toList(),
                     );
                   }),
@@ -114,7 +120,13 @@ class Labsrefactor extends StatefulWidget {
       required this.name,
       required this.selectdate,
       required this.uid,
-      required this.timeslot});
+      required this.timeslot,
+      required this.ac,
+      required this.audio,
+      required this.notes,
+      required this.projector,
+      required this.seat,
+      required this.img});
   final List timeslot;
   final double width;
   final double height;
@@ -122,6 +134,12 @@ class Labsrefactor extends StatefulWidget {
   final dept;
   final uid;
   final selectdate;
+  final ac;
+  final audio;
+  final projector;
+  final seat;
+  final notes;
+  final img;
   @override
   State<Labsrefactor> createState() => _LabsrefactorState();
 }
@@ -153,13 +171,34 @@ class _LabsrefactorState extends State<Labsrefactor> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.asset(
-                    "assets/labs.jpg",
-                    height: (widget.height * 0.25) * 0.65,
-                    width: widget.width,
-                    fit: BoxFit.cover,
+                GestureDetector(
+                  onTap: () => {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => RoomDetailsPage(
+                                name: widget.name,
+                                isAudioSystemAvailable: widget.audio ?? false,
+                                isProjectorAvailable: widget.projector ?? false,
+                                isACAvailable: widget.ac ?? false,
+                                seatNumber: widget.seat ?? "Not Available",
+                                notes: widget.notes ?? "Not Available")))
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: widget.img != null
+                        ? Image.network(
+                            widget.img, // Replace with the actual URL
+                            height: (widget.height * 0.25) * 0.65,
+                            width: widget.width,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            'assets/halls.jpeg',
+                            height: (widget.height * 0.25) * 0.65,
+                            width: widget.width,
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 SizedBox(
@@ -172,7 +211,7 @@ class _LabsrefactorState extends State<Labsrefactor> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: widget.width *0.8, // 80% of the width
+                          width: widget.width * 0.8, // 80% of the width
                           child: Text(
                             widget.name,
                             maxLines: 2,

@@ -5,13 +5,20 @@ import 'package:http/http.dart' as http;
 var ip = 'https://prasath.pythonanywhere.com';
 
 Future<void> sendPushNotification(
-    {required registration_token, required title, required body}) async {
-  print("sending");
+    {required registration_token,
+    required title,
+    required body,
+    required email,
+    required state}) async {
+  print(email);
+  print(state);
   final url = Uri.parse('${ip}/send_push_notification/');
   final data = {
     'registration_token': registration_token,
     'title': title,
     'body': body,
+    'email': email,
+    'state': state
   };
 
   try {

@@ -45,7 +45,8 @@ class _userdetailsState extends State<userdetails> {
     "BME",
     "NANO",
     "ESTATE OFFICER",
-    "LIBRARY MANAGEMENT"
+    "LIBRARY MANAGEMENT",
+    "MBA"
   ];
   TextEditingController _namecon = TextEditingController();
   TextEditingController _Registercon = TextEditingController();
@@ -96,7 +97,6 @@ class _userdetailsState extends State<userdetails> {
       _isloading = true;
     });
     try {
-      print(_namecon.text);
       if (_namecon.text.trim().isNotEmpty &&
           _Registercon.text.trim().isNotEmpty &&
           _Emailcon.text.trim().isNotEmpty &&
@@ -178,8 +178,8 @@ class _userdetailsState extends State<userdetails> {
                     TextFormField(
                       controller: _Registercon,
                       decoration: InputDecoration(
-                        labelText: 'Register No',
-                        hintText: 'Enter your Register No',
+                        labelText: 'Faculty Id',
+                        hintText: 'Faculty Id',
                         border: OutlineInputBorder(),
                       ),
                     ),

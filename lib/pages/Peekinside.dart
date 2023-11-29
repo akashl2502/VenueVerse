@@ -13,9 +13,8 @@ class Peekinside extends StatefulWidget {
 class _PeekinsideState extends State<Peekinside> {
   @override
   Widget build(BuildContext context) {
-    print(widget.list);
     return Scaffold(
-      appBar: AppBar( 
+      appBar: AppBar(
         title: Text("Private Access"),
         centerTitle: true,
         backgroundColor: Appcolor.secondgreen,
