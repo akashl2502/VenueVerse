@@ -9,7 +9,8 @@ Future<void> sendPushNotification(
     required title,
     required body,
     required email,
-    required state}) async {
+    required state,
+    required reason}) async {
   print(email);
   print(state);
   final url = Uri.parse('${ip}/send_push_notification/');
@@ -18,7 +19,8 @@ Future<void> sendPushNotification(
     'title': title,
     'body': body,
     'email': email,
-    'state': state
+    'state': state,
+    'reason': reason
   };
 
   try {

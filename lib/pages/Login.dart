@@ -27,27 +27,41 @@ class _LoginState extends State<Login> {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final GoogleSignInAuthentication? googleAuth =
           await googleUser?.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      await _auth.signInWithCredential(credential).then((value) {
-        var a = value.user!.uid;
-        var email = value.user!.email;
-        Navigator.pushReplacement(
-          context,
-          PageTransition(
-            type: PageTransitionType.rotate,
-            child: userdetails(
-              uid: a,
-              email: email,
-            ),
-            alignment: Alignment.topCenter,
-            isIos: true,
-            duration: Duration(milliseconds: 500),
-          ),
+      final String email = googleUser?.email ??
+          ''; // Replace with the actual variable holding the email address
+
+      if (RegExp(r'@srec\.ac\.in|@srptc\.ac\.in').hasMatch(email)) {
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth?.accessToken,
+          idToken: googleAuth?.idToken,
         );
-      });
+        print(credential);
+        await _auth.signInWithCredential(credential).then((value) {
+          var a = value.user!.uid;
+          var email = value.user!.email;
+          Navigator.pushReplacement(
+            context,
+            PageTransition(
+              type: PageTransitionType.rotate,
+              child: userdetails(
+                uid: a,
+                email: email,
+              ),
+              alignment: Alignment.topCenter,
+              isIos: true,
+              duration: Duration(milliseconds: 500),
+            ),
+          );
+        });
+      } else {
+        await GoogleSignIn().signOut();
+        Navigator.pop(context);
+        Showsnackbar(
+            context: context,
+            contentType: ContentType.failure,
+            title: "Access Restricted",
+            message: "Login restricted for this email address");
+      }
     } catch (e) {
       setState(() {
         _isloading = false;

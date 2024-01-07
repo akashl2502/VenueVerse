@@ -97,19 +97,20 @@ class _SeminarhallState extends State<Seminarhall> {
                           }
                         }
                         return Hallrefactor(
-                            width: width,
-                            height: height,
-                            name: e['name'],
-                            selectdate: widget.Selectdate,
-                            uid: e['uid'],
-                            timeslot: timeslot,
-                            dept: e['dept'],
-                            ac: e['ac'],
-                            audio: e['audio'],
-                            projector: e['projector'],
-                            seat: e['seatNumber'],
-                            notes: e['notes'],
-                            img: e['imageurl']);
+                          width: width,
+                          height: height,
+                          name: e['name'],
+                          selectdate: widget.Selectdate,
+                          uid: e['uid'],
+                          timeslot: timeslot,
+                          dept: e['dept'],
+                          ac: e['ac'],
+                          audio: e['audio'],
+                          projector: e['projector'],
+                          seat: e['seatNumber'],
+                          notes: e['notes'],
+                          img: e['imageurl'],
+                        );
                       }).toList(),
                     );
                   }),
@@ -153,6 +154,8 @@ class Hallrefactor extends StatefulWidget {
 
 class _HallrefactorState extends State<Hallrefactor> {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  TextEditingController reasonController = TextEditingController();
+  bool Confirm = false;
 
   @override
   Widget build(BuildContext context) {
@@ -240,21 +243,169 @@ class _HallrefactorState extends State<Hallrefactor> {
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: OutlinedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 List timeslot = [];
                                 for (var i in widget.timeslot) {
                                   timeslot.add([i[0], i[1]]);
                                 }
-                                Picktime_Bookvenue(
-                                    dept: widget.dept,
+                                var terms = false;
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text(
+                                        "Terms & Conditions",
+                                        style: GoogleFonts.ysabeau(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SingleChildScrollView(
+                                            child: Text(
+                                              widget.notes.toString() ??
+                                                  "No Terms & Conditions Mentions for the Hall",
+                                              style: GoogleFonts.ysabeau(
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(height: 20),
+                                          SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  terms = true;
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  "Agree",
+                                                  style: TextStyle(
+                                                      color: Colors.green,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                              SizedBox(width: 20),
+                                              TextButton(
+                                                onPressed: () {
+                                                  terms = false;
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  "Disagree",
+                                                  style: TextStyle(
+                                                      color: Colors.red,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                                if (terms) {
+                                  await showDialog(
                                     context: context,
-                                    name: widget.name,
-                                    selectdate: widget.selectdate,
-                                    uid: widget.uid,
-                                    timeslot: timeslot,
-                                    hname: widget.name,
-                                    uname: userdet['name'],
-                                    email: userdet['email']);
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text(
+                                          "Confirmation",
+                                          style: GoogleFonts.ysabeau(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              "Do you want to book this time slot?",
+                                              style: GoogleFonts.ysabeau(
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            SizedBox(height: 20),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                labelText: 'Enter Reason',
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              controller: reasonController,
+                                            ),
+                                            SizedBox(height: 20),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Confirm = true;
+                                                    if (Confirm &&
+                                                        reasonController
+                                                            .text.isNotEmpty) {
+                                                      Picktime_Bookvenue(
+                                                          dept: widget.dept,
+                                                          context: context,
+                                                          name: widget.name,
+                                                          selectdate:
+                                                              widget.selectdate,
+                                                          uid: widget.uid,
+                                                          timeslot: timeslot,
+                                                          hname: widget.name,
+                                                          uname:
+                                                              userdet['name'],
+                                                          email:
+                                                              userdet['email'],
+                                                          reason:
+                                                              reasonController
+                                                                  .text);
+                                                    } else if (reasonController
+                                                        .text.isEmpty) {
+                                                      Showsnackbar(
+                                                          context: context,
+                                                          contentType:
+                                                              ContentType
+                                                                  .warning,
+                                                          title: "Reason",
+                                                          message:
+                                                              "please fill the reason to book venue");
+                                                      Navigator.pop(context);
+                                                    }
+                                                  },
+                                                  child: Text(
+                                                    "Yes",
+                                                    style: TextStyle(
+                                                        color: Colors.green,
+                                                        fontSize: 15),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 20),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text(
+                                                    "No",
+                                                    style: TextStyle(
+                                                        color: Colors.red,
+                                                        fontSize: 15),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }
                               },
                               child: Text('Book'),
                               style: OutlinedButton.styleFrom(
@@ -276,8 +427,9 @@ class _HallrefactorState extends State<Hallrefactor> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            Peekinside(list: widget.timeslot)));
+                                        builder: (context) => Peekinside(
+                                              list: widget.timeslot,
+                                            )));
                               },
                               child: Text('Peek Inside'),
                               style: OutlinedButton.styleFrom(

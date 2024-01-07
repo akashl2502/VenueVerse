@@ -1,5 +1,6 @@
 import 'package:VenueVerse/Api/Cloudpush.dart';
 import 'package:VenueVerse/components/Snackbar.dart';
+import 'package:VenueVerse/pages/Pastreviewrequest.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,15 @@ class _ViewrequestsState extends State<Viewrequests> {
         centerTitle: true,
         backgroundColor: Appcolor.secondgreen,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => Pastviewrequests()));
+            },
+            icon: Icon(Icons.history),
+          )
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -121,6 +131,7 @@ class _RequestcardState extends State<Requestcard> {
         //     message: "${widget.data['name']} request haas been updated");
       }
       try {
+        print(widget.data);
         CollectionReference _cat = _firestore.collection("Userdetails");
         Query query = _cat.where("uid", isEqualTo: widget.data['uid']);
         QuerySnapshot querySnapshot = await query.get();
@@ -137,7 +148,8 @@ class _RequestcardState extends State<Requestcard> {
                 registration_token: fcm,
                 title: "Request Status",
                 body:
-                    "Your Request for ${widget.data['RN']} Has been ${action} by department");
+                    "Your Request for ${widget.data['RN']} has been ${action} by department on ${widget.data['dor']} between ${widget.data['FT']} on ${widget.data['ET']}",
+                reason: '');
           } catch (e) {
             print(e);
             print("Api error");
@@ -170,7 +182,8 @@ class _RequestcardState extends State<Requestcard> {
                 widget.data['FT'],
                 widget.data['ET'],
                 widget.data['name'],
-                widget.data['roll']
+                widget.data['roll'],
+                widget.data['reason']
               ],
             }
           };
@@ -184,7 +197,8 @@ class _RequestcardState extends State<Requestcard> {
                 widget.data['FT'],
                 widget.data['ET'],
                 widget.data['name'],
-                widget.data['roll']
+                widget.data['roll'],
+                widget.data['reason']
               ]
             },
           }, SetOptions(merge: true));
@@ -196,7 +210,8 @@ class _RequestcardState extends State<Requestcard> {
               widget.data['FT'],
               widget.data['ET'],
               widget.data['name'],
-              widget.data['roll']
+              widget.data['roll'],
+              widget.data['reason']
             ]
           },
         }, SetOptions(merge: true));
@@ -216,6 +231,7 @@ class _RequestcardState extends State<Requestcard> {
     print(widget.data);
 
     return Container(
+      margin: EdgeInsets.only(bottom: 20),
       width: widget.width,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -243,7 +259,7 @@ class _RequestcardState extends State<Requestcard> {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 5.0),
                       child: Text(
-                        '${widget.data['name']}(${widget.data['roll']}) from ${widget.data['dept']} is requesting to takeover ${widget.data['RN']} from ${widget.data['FT']} to ${widget.data['ET']} at ${widget.data['dor']}',
+                        '${widget.data['name']}(${widget.data['roll']}) from ${widget.data['dept']} is requesting to takeover ${widget.data['RN']} from ${widget.data['FT']} to ${widget.data['ET']} at ${widget.data['dor']} because ${widget.data['reason']}',
                         style: GoogleFonts.ysabeau(
                           fontSize: 19,
                           height: 2,

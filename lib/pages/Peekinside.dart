@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 class Peekinside extends StatefulWidget {
   const Peekinside({super.key, required this.list});
   final List list;
-
   @override
   State<Peekinside> createState() => _PeekinsideState();
 }
@@ -38,6 +37,7 @@ class _PeekinsideState extends State<Peekinside> {
                           name: data[2],
                           roll: data[3],
                           tt: data[1],
+                          reason: data[4],
                         ))
                     .toList(),
               ),
@@ -51,11 +51,13 @@ class Peekinsidecard extends StatelessWidget {
       {required this.roll,
       required this.ft,
       required this.name,
-      required this.tt});
+      required this.tt,
+      required this.reason});
   final name;
   final roll;
   final ft;
   final tt;
+  final reason;
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -96,6 +98,28 @@ class Peekinsidecard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            reason ?? 'No Reason',
+                            style: GoogleFonts.ysabeau(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign
+                                .center, // Align the text to the center
+
+                            overflow: TextOverflow.ellipsis, // Handle overflow
+                            maxLines: 10, // Set the maximum number of lines
+                          ),
+                        )
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),

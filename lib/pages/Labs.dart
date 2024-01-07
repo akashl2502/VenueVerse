@@ -1,6 +1,7 @@
 import 'package:VenueVerse/components/Bookvenue.dart';
 import 'package:VenueVerse/components/Colors.dart';
 import 'package:VenueVerse/components/Rooms.dart';
+import 'package:VenueVerse/components/Snackbar.dart';
 import 'package:VenueVerse/pages/Peekinside.dart';
 import 'package:VenueVerse/pages/Roomdetails.dart';
 import 'package:VenueVerse/pages/Userdetails.dart';
@@ -90,19 +91,20 @@ class _LabsState extends State<Labs> {
                           }
                         }
                         return Labsrefactor(
-                            dept: e['dept'],
-                            width: width,
-                            height: height,
-                            name: e['name'],
-                            selectdate: widget.Selectdate,
-                            uid: e['uid'],
-                            timeslot: timeslot,
-                            ac: e['ac'],
-                            audio: e['audio'],
-                            projector: e['projector'],
-                            seat: e['seatNumber'],
-                            notes: e['notes'],
-                            img: e['imageurl']);
+                          dept: e['dept'],
+                          width: width,
+                          height: height,
+                          name: e['name'],
+                          selectdate: widget.Selectdate,
+                          uid: e['uid'],
+                          timeslot: timeslot,
+                          ac: e['ac'],
+                          audio: e['audio'],
+                          projector: e['projector'],
+                          seat: e['seatNumber'],
+                          notes: e['notes'],
+                          img: e['imageurl'],
+                        );
                       }).toList(),
                     );
                   }),
@@ -146,6 +148,8 @@ class Labsrefactor extends StatefulWidget {
 
 class _LabsrefactorState extends State<Labsrefactor> {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  TextEditingController reasonController = TextEditingController();
+  bool Confirm = false;
 
   @override
   Widget build(BuildContext context) {
@@ -238,15 +242,29 @@ class _LabsrefactorState extends State<Labsrefactor> {
                                 for (var i in widget.timeslot) {
                                   timeslot.add([i[0], i[1]]);
                                 }
-                                Picktime_Bookvenue(
-                                    dept: widget.dept,
-                                    context: context,
-                                    name: widget.name,
-                                    selectdate: widget.selectdate,
-                                    uid: widget.uid,
-                                    timeslot: timeslot,
-                                    hname: widget.name,
-                                    uname: userdet['name']);
+                                Confirm = true;
+                                if (Confirm &&
+                                    reasonController.text.isNotEmpty) {
+                                  Picktime_Bookvenue(
+                                      dept: widget.dept,
+                                      context: context,
+                                      name: widget.name,
+                                      selectdate: widget.selectdate,
+                                      uid: widget.uid,
+                                      timeslot: timeslot,
+                                      hname: widget.name,
+                                      uname: userdet['name'],
+                                      email: userdet['email'],
+                                      reason: reasonController.text);
+                                } else if (reasonController.text.isEmpty) {
+                                  Showsnackbar(
+                                      context: context,
+                                      contentType: ContentType.warning,
+                                      title: "Reason",
+                                      message:
+                                          "please fill the reason to book venue");
+                                  Navigator.pop(context);
+                                }
                               },
                               child: Text('Book'),
                               style: OutlinedButton.styleFrom(
@@ -268,8 +286,9 @@ class _LabsrefactorState extends State<Labsrefactor> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            Peekinside(list: widget.timeslot)));
+                                        builder: (context) => Peekinside(
+                                              list: widget.timeslot,
+                                            )));
                               },
                               child: Text('Peek Inside'),
                               style: OutlinedButton.styleFrom(

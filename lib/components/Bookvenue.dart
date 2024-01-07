@@ -41,16 +41,17 @@ Future<void> Picktime_Bookvenue(
     hname,
     uname,
     dept,
-    email}) async {
+    email,
+    reason}) async {
   TimeOfDay? selectedTime;
   bool Confirm = false;
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final now = TimeOfDay.now();
   final startTime = TimeOfDay(hour: 9, minute: 0);
   final endTime = TimeOfDay(hour: 17, minute: 0);
-
   TimeOfDay? timeS;
   TimeOfDay? timeE;
+  TextEditingController reasonController = TextEditingController();
 
   await showDialog(
     context: context,
@@ -157,59 +158,8 @@ Future<void> Picktime_Bookvenue(
       );
     },
   );
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(
-          "Confirmation",
-          style: GoogleFonts.ysabeau(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Do you want to book this time slot?",
-              style: GoogleFonts.ysabeau(
-                fontSize: 15,
-              ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Confirm = true;
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: Text(
-                    "Yes",
-                    style: TextStyle(color: Colors.green, fontSize: 15),
-                  ),
-                ),
-                SizedBox(width: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: Text(
-                    "No",
-                    style: TextStyle(color: Colors.red, fontSize: 15),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
 
-  if (timeS != null && timeE != null && Confirm) {
+  if (timeS != null && timeE != null) {
     final selectedDateTimeStart = DateTime(
       DateTime.now().year,
       DateTime.now().month,
@@ -251,11 +201,7 @@ Future<void> Picktime_Bookvenue(
           contentType: ContentType.failure,
           title: "Restricted Time Slot",
           message: "Please select times between 9 AM and 5 PM.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(""),
-        ),
-      );
+      Navigator.pop(context);
     } else {
       if (isTimeOverlap(timeslot, timeS!, timeE!)) {
         Showsnackbar(
@@ -263,6 +209,7 @@ Future<void> Picktime_Bookvenue(
             contentType: ContentType.failure,
             title: "Overlap of slot",
             message: "The selected time overlaps with a restricted time slot.");
+        Navigator.pop(context);
       } else {
         var a = timeS!.hour.toString() + ":" + timeS!.minute.toString();
         var b = timeE!.hour.toString() + ":" + timeE!.minute.toString();
@@ -281,7 +228,8 @@ Future<void> Picktime_Bookvenue(
             'rid': uid,
             'RN': name,
             'datemill': specificTimestamp,
-            'email': email
+            'email': email,
+            'reason': reason
           }).then((value) {
             Showsnackbar(
                 context: context,
@@ -290,7 +238,7 @@ Future<void> Picktime_Bookvenue(
                 message: "your request have been send to department Head");
           });
         }
-
+        Navigator.pop(context);
         try {
           String searchitem = dept.toString();
           CollectionReference _cat = _firestore.collection("Admin");
@@ -313,7 +261,9 @@ Future<void> Picktime_Bookvenue(
                   state: 0,
                   registration_token: fcm,
                   title: "New Booking Request",
-                  body: "${uname} has request ${hname} for booking");
+                  body:
+                      "${uname} from ${dept} has requested ${hname} on ${selectdate} between ${a} to ${b} for ${reason}",
+                  reason: reason);
             }
           }
         } catch (e) {
@@ -321,5 +271,12 @@ Future<void> Picktime_Bookvenue(
         }
       }
     }
+  } else {
+    Showsnackbar(
+        context: context,
+        contentType: ContentType.warning,
+        title: "Time",
+        message: "please enter time for booking");
+    Navigator.pop(context);
   }
 }
