@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:VenueVerse/components/Snackbar.dart';
-import 'package:VenueVerse/pages/Home.dart';
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/pages/Home.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/pages/Home.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/pages/Home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,28 +26,45 @@ class _userdetailsState extends State<userdetails> {
   @override
   void initState() {
     Checkuser(uid: widget.uid);
+    getDocumentDetails("dLZjByE0J7D8xpp2Cxa7");
     _Emailcon.text = widget.email;
     super.initState();
   }
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List dept = [
-    'IT',
-    'CSC',
-    "AI&DS",
-    "EIE",
-    "EEE",
-    "ECE",
-    "CIVIL",
-    "Mech",
-    "AERO",
-    "CDPD",
-    "BME",
-    "NANO",
-    "ESTATE OFFICER",
-    "LIBRARY MANAGEMENT",
-    "MBA"
-  ];
+  List dept = ['IT'];
+  Future<void> getDocumentDetails(String docID) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    try {
+      setState(() {
+        _isloading = true;
+      });
+      DocumentSnapshot docSnapshot =
+          await firestore.collection('deptlist').doc(docID).get();
+
+      if (docSnapshot.exists) {
+        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
+
+        print(data);
+        setState(() {
+          dept = data['dept'];
+          _isloading = false;
+        });
+      } else {
+        setState(() {
+          _isloading = false;
+        });
+        print('Document does not exist');
+      }
+    } catch (e) {
+      setState(() {
+        _isloading = true;
+      });
+      print('Error retrieving document: $e');
+    }
+  }
+
   TextEditingController _namecon = TextEditingController();
   TextEditingController _Registercon = TextEditingController();
 

@@ -1,4 +1,4 @@
-import 'package:VenueVerse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

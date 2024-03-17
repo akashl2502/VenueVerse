@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 var ip = 'https://prasath.pythonanywhere.com';
+// var ip = 'https://prasath.pythonanywhere.com';
 
 Future<void> sendPushNotification(
     {required registration_token,

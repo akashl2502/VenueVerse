@@ -1,15 +1,18 @@
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/components/Date.dart';
-import 'package:VenueVerse/pages/About.dart';
-import 'package:VenueVerse/pages/Labs.dart';
-import 'package:VenueVerse/pages/Login.dart';
-import 'package:VenueVerse/pages/Privateaccess.dart';
-import 'package:VenueVerse/pages/Report.dart';
-import 'package:VenueVerse/pages/RequestStatus.dart';
-import 'package:VenueVerse/pages/Seminarhall.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
-import 'package:VenueVerse/pages/ViewRequests.dart';
+import 'dart:async';
+
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/components/Date.dart';
+import 'package:com.srec.venueverse/pages/About.dart';
+import 'package:com.srec.venueverse/pages/Labs.dart';
+import 'package:com.srec.venueverse/pages/Login.dart';
+import 'package:com.srec.venueverse/pages/Privateaccess.dart';
+import 'package:com.srec.venueverse/pages/Report.dart';
+import 'package:com.srec.venueverse/pages/RequestStatus.dart';
+import 'package:com.srec.venueverse/pages/Seminarhall.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/pages/ViewRequests.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:com.srec.venueverse/pages/revertpastrequest.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,11 +44,12 @@ class _HomeState extends State<Home> {
   DateTime now = DateTime.now();
   bool _isadmin = false;
   final _auth = FirebaseAuth.instance;
-
+  bool _ismaintance = false;
   void initState() {
     var a = DateFormat('yyyy-MM-dd').format(now);
     Getprebookdata(fordate: a);
     checkadmin();
+    getDocumentDetails("dLZjByE0J7D8xpp2Cxa7");
     _controller = ScrollController();
 
     super.initState();
@@ -60,6 +64,38 @@ class _HomeState extends State<Home> {
       }
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<void> getDocumentDetails(String docID) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    try {
+      setState(() {
+        _isloading = true;
+      });
+      DocumentSnapshot docSnapshot =
+          await firestore.collection('deptlist').doc(docID).get();
+
+      if (docSnapshot.exists) {
+        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
+
+        setState(() {
+          _isloading = false;
+          _ismaintance = data['update'];
+          print(_ismaintance);
+        });
+      } else {
+        setState(() {
+          _isloading = false;
+        });
+        print('Document does not exist');
+      }
+    } catch (e) {
+      setState(() {
+        _isloading = true;
+      });
+      print('Error retrieving document: $e');
     }
   }
 
@@ -90,6 +126,7 @@ class _HomeState extends State<Home> {
 
     setState(() {
       Appdata = uniqueList;
+      print(uniqueList);
       _isloading = false;
     });
   }
@@ -451,6 +488,8 @@ class _HomeState extends State<Home> {
                                             CrossAxisAlignment.center,
                                         children: Appdata.map((e) {
                                           return Bookedvenuerefactor(
+                                            date: e['dor'],
+                                            rid: e['rid'],
                                             height: height,
                                             width: width,
                                             name: e['RN'],
@@ -463,6 +502,8 @@ class _HomeState extends State<Home> {
                           //   '${date != null ? "${date!.day}-${date!.month}-${date!.year}" : "No selection yet."}',
                           //   style: Theme.of(context).textTheme.headlineMedium,
                           // ),
+                          ,
+                          _ismaintance ? MaintenanceTextCarousel() : Container()
                         ],
                       ),
                     ),
@@ -661,75 +702,87 @@ class Bookedvenuerefactor extends StatelessWidget {
       {super.key,
       required this.height,
       required this.width,
-      required this.name});
+      required this.name,
+      required this.date,
+      required this.rid});
   final name;
   final double height;
   final double width;
-
+  final rid;
+  final date;
   @override
   Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
-        child: Container(
-            height: height * 0.08,
-            width: width * 1,
-            decoration: BoxDecoration(
-              color: Appcolor.grey,
-              borderRadius: BorderRadius.circular(10.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(
-                  Icons.home,
-                  color: Appcolor.firstgreen,
-                ),
-                Container(
-                  width: width * 0.4,
-                  child: Text(
-                    name,
-                    style: GoogleFonts.ysabeau(
-                      fontSize: 18,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        Reverpastviewrequest("widget.docid", date, rid, true)));
+          },
+          child: Container(
+              height: height * 0.08,
+              width: width * 1,
+              decoration: BoxDecoration(
+                color: Appcolor.grey,
+                borderRadius: BorderRadius.circular(10.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(
+                    Icons.home,
+                    color: Appcolor.firstgreen,
+                  ),
+                  Container(
+                    width: width * 0.4,
+                    child: Text(
+                      name,
+                      style: GoogleFonts.ysabeau(
+                        fontSize: 18,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Container(
-                  height: height * 0.04,
-                  width: width * 0.25,
-                  decoration: BoxDecoration(
-                    color: Appcolor.secondgreen,
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.check,
-                        size: 15,
-                      ),
-                      SizedBox(width: 5.0),
-                      Text(
-                        "Booked",
-                        style: GoogleFonts.ysabeau(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                  Container(
+                    height: height * 0.04,
+                    width: width * 0.25,
+                    decoration: BoxDecoration(
+                      color: Appcolor.secondgreen,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check,
+                          size: 15,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 5.0),
+                        Text(
+                          "Booked",
+                          style: GoogleFonts.ysabeau(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            )));
+                ],
+              )),
+        ));
   }
 }
 
@@ -784,5 +837,83 @@ extension DateTimeExtensions on DateTime {
       default:
         return '';
     }
+  }
+}
+
+class MaintenanceTextCarousel extends StatefulWidget {
+  @override
+  _MaintenanceTextCarouselState createState() =>
+      _MaintenanceTextCarouselState();
+}
+
+class _MaintenanceTextCarouselState extends State<MaintenanceTextCarousel> {
+  final List<String> maintenanceMessages = [
+    'App is under maintenance...',
+    'Maintenance in progress...',
+    'Please wait for a moment...',
+    'Thank you for your patience...',
+  ];
+
+  int _currentIndex = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      setState(() {
+        _currentIndex = (_currentIndex + 1) % maintenanceMessages.length;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 50.0,
+      child: Stack(
+        children: [
+          AnimatedPositioned(
+            duration: Duration(seconds: 1),
+            curve: Curves.easeInOut,
+            left: -(_currentIndex * MediaQuery.of(context).size.width),
+            child: Row(
+              children: maintenanceMessages.map((message) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  alignment: Alignment.center,
+                  child: Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      color: Appcolor.secondgreen,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 2,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

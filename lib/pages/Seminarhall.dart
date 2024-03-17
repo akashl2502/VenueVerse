@@ -1,10 +1,10 @@
-import 'package:VenueVerse/components/Bookvenue.dart';
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/components/Rooms.dart';
-import 'package:VenueVerse/components/Snackbar.dart';
-import 'package:VenueVerse/pages/Peekinside.dart';
-import 'package:VenueVerse/pages/Roomdetails.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/components/Bookvenue.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/components/Rooms.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/pages/Peekinside.dart';
+import 'package:com.srec.venueverse/pages/Roomdetails.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -263,16 +263,16 @@ class _HallrefactorState extends State<Hallrefactor> {
                                       content: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
+                                          SizedBox(height: 20),
                                           SingleChildScrollView(
                                             child: Text(
-                                              widget.notes.toString() ??
+                                              widget.notes ??
                                                   "No Terms & Conditions Mentions for the Hall",
                                               style: GoogleFonts.ysabeau(
                                                 fontSize: 15,
                                               ),
                                             ),
                                           ),
-                                          SizedBox(height: 20),
                                           SizedBox(height: 20),
                                           Row(
                                             mainAxisAlignment:

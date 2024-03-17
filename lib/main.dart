@@ -1,9 +1,9 @@
-import 'package:VenueVerse/Api/Firebase_pushnotification.dart';
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/pages/Getstarted.dart';
-import 'package:VenueVerse/pages/RequestStatus.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
-import 'package:VenueVerse/pages/ViewRequests.dart';
+import 'package:com.srec.venueverse/Api/Firebase_pushnotification.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/pages/Getstarted.dart';
+import 'package:com.srec.venueverse/pages/RequestStatus.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/pages/ViewRequests.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

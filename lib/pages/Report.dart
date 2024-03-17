@@ -1,6 +1,6 @@
-import 'package:VenueVerse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:flutter/material.dart';
-import 'package:VenueVerse/components/Colors.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart'; // Import for DateFormat
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -101,14 +101,14 @@ class _ReportPageState extends State<ReportPage> {
       print("Error fetching data: $error");
     }
     setState(() {
-      if (deptNames.length!=0){
-    Department = deptNames;
-      selectedHall = deptNames[0];
-      }else{
+      if (deptNames.length != 0) {
+        Department = deptNames;
+        selectedHall = deptNames[0];
+      } else {
         Department = ['Halls', 'Labs'];
-        selectedHall='Halls';
-      } 
-  
+        selectedHall = 'Halls';
+      }
+
       _isloading = false;
     });
   }

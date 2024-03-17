@@ -1,6 +1,6 @@
-import 'package:VenueVerse/Api/Cloudpush.dart';
-import 'package:VenueVerse/components/Snackbar.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/Api/Cloudpush.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
@@ -159,7 +159,12 @@ Future<void> Picktime_Bookvenue(
     },
   );
 
-  if (timeS != null && timeE != null) {
+  if (timeS != null &&
+      timeE != null &&
+      userdet['name'] != null &&
+      userdet['registerno'] != null &&
+      userdet['uid'] != null &&
+      userdet['dept'] != null) {
     final selectedDateTimeStart = DateTime(
       DateTime.now().year,
       DateTime.now().month,
@@ -224,7 +229,8 @@ Future<void> Picktime_Bookvenue(
             'FT': a,
             'ET': b,
             'isapproved': 'pending',
-            'dept': dept,
+            'Hdept': dept,
+            'dept': userdet['dept'],
             'rid': uid,
             'RN': name,
             'datemill': specificTimestamp,
@@ -271,6 +277,12 @@ Future<void> Picktime_Bookvenue(
         }
       }
     }
+  } else if (timeS != null && timeE != null) {
+    Showsnackbar(
+        context: context,
+        contentType: ContentType.warning,
+        title: "Network Error",
+        message: "please try again later");
   } else {
     Showsnackbar(
         context: context,

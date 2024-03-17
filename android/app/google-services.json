@@ -49,6 +49,43 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014878134478:android:9f328f57c4a74691fcf09f",
+        "android_client_info": {
+          "package_name": "com.srec.venueverse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1014878134478-6apmda3eh607su77oih5unc7t3jniop2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.srec.venueverse",
+            "certificate_hash": "3edd72ecf216a0a55d1187837cbd5e5b54c700ff"
+          }
+        },
+        {
+          "client_id": "1014878134478-1g6ot2th80r7emvhqugg9qo9tmvjjl3b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAys3cIfQ-2bT5R3qyiTrrLhoQJkChJLZ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1014878134478-1g6ot2th80r7emvhqugg9qo9tmvjjl3b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

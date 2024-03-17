@@ -1,10 +1,10 @@
-import 'package:VenueVerse/components/Bookvenue.dart';
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/components/Rooms.dart';
-import 'package:VenueVerse/components/Snackbar.dart';
-import 'package:VenueVerse/pages/Peekinside.dart';
-import 'package:VenueVerse/pages/Roomdetails.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/components/Bookvenue.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/components/Rooms.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/pages/Peekinside.dart';
+import 'package:com.srec.venueverse/pages/Roomdetails.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -237,33 +237,170 @@ class _LabsrefactorState extends State<Labsrefactor> {
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: OutlinedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 List timeslot = [];
                                 for (var i in widget.timeslot) {
                                   timeslot.add([i[0], i[1]]);
                                 }
-                                Confirm = true;
-                                if (Confirm &&
-                                    reasonController.text.isNotEmpty) {
-                                  Picktime_Bookvenue(
-                                      dept: widget.dept,
-                                      context: context,
-                                      name: widget.name,
-                                      selectdate: widget.selectdate,
-                                      uid: widget.uid,
-                                      timeslot: timeslot,
-                                      hname: widget.name,
-                                      uname: userdet['name'],
-                                      email: userdet['email'],
-                                      reason: reasonController.text);
-                                } else if (reasonController.text.isEmpty) {
-                                  Showsnackbar(
-                                      context: context,
-                                      contentType: ContentType.warning,
-                                      title: "Reason",
-                                      message:
-                                          "please fill the reason to book venue");
-                                  Navigator.pop(context);
+                                var terms = false;
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text(
+                                        "Terms & Conditions",
+                                        style: GoogleFonts.ysabeau(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(height: 20),
+                                          SingleChildScrollView(
+                                            child: Text(
+                                              // ignore: unnecessary_null_comparison
+                                              widget.notes == null
+                                                  ? "No Terms & Conditions Mentions for the lab:"
+                                                  : widget.notes.toString(),
+                                              style: GoogleFonts.ysabeau(
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  terms = true;
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  "Agree",
+                                                  style: TextStyle(
+                                                      color: Colors.green,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                              SizedBox(width: 20),
+                                              TextButton(
+                                                onPressed: () {
+                                                  terms = false;
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  "Disagree",
+                                                  style: TextStyle(
+                                                      color: Colors.red,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                                if (terms) {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text(
+                                          "Confirmation",
+                                          style: GoogleFonts.ysabeau(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              "Do you want to book this time slot?",
+                                              style: GoogleFonts.ysabeau(
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            SizedBox(height: 20),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                labelText: 'Enter Reason',
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              controller: reasonController,
+                                            ),
+                                            SizedBox(height: 20),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Confirm = true;
+                                                    if (Confirm &&
+                                                        reasonController
+                                                            .text.isNotEmpty) {
+                                                      Picktime_Bookvenue(
+                                                          dept: widget.dept,
+                                                          context: context,
+                                                          name: widget.name,
+                                                          selectdate:
+                                                              widget.selectdate,
+                                                          uid: widget.uid,
+                                                          timeslot: timeslot,
+                                                          hname: widget.name,
+                                                          uname:
+                                                              userdet['name'],
+                                                          email:
+                                                              userdet['email'],
+                                                          reason:
+                                                              reasonController
+                                                                  .text);
+                                                    } else if (reasonController
+                                                        .text.isEmpty) {
+                                                      Showsnackbar(
+                                                          context: context,
+                                                          contentType:
+                                                              ContentType
+                                                                  .warning,
+                                                          title: "Reason",
+                                                          message:
+                                                              "please fill the reason to book venue");
+                                                      Navigator.pop(context);
+                                                    }
+                                                  },
+                                                  child: Text(
+                                                    "Yes",
+                                                    style: TextStyle(
+                                                        color: Colors.green,
+                                                        fontSize: 15),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 20),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text(
+                                                    "No",
+                                                    style: TextStyle(
+                                                        color: Colors.red,
+                                                        fontSize: 15),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
                                 }
                               },
                               child: Text('Book'),

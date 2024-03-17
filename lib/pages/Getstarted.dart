@@ -1,5 +1,5 @@
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/pages/Login.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/pages/Login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';

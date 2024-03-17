@@ -1,6 +1,6 @@
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/components/Snackbar.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

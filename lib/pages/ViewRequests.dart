@@ -1,7 +1,7 @@
-import 'package:VenueVerse/Api/Cloudpush.dart';
-import 'package:VenueVerse/components/Snackbar.dart';
-import 'package:VenueVerse/pages/Pastreviewrequest.dart';
-import 'package:VenueVerse/pages/Userdetails.dart';
+import 'package:com.srec.venueverse/Api/Cloudpush.dart';
+import 'package:com.srec.venueverse/components/Snackbar.dart';
+import 'package:com.srec.venueverse/pages/Pastreviewrequest.dart';
+import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -285,7 +285,63 @@ class _RequestcardState extends State<Requestcard> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    Actorrej(action: "Approved");
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text(
+                            "Alert!",
+                            style: GoogleFonts.ysabeau(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(height: 20),
+                              SingleChildScrollView(
+                                child: Text(
+                                  "Are you sure to Accpect this request",
+                                  style: GoogleFonts.ysabeau(
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Actorrej(action: "Approved");
+
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      "Yes",
+                                      style: TextStyle(
+                                          color: Colors.green, fontSize: 15),
+                                    ),
+                                  ),
+                                  SizedBox(width: 20),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      "No",
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 15),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
                   },
                   icon: Icon(Icons.check),
                   label: Text("Approve"),
@@ -296,7 +352,63 @@ class _RequestcardState extends State<Requestcard> {
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    Actorrej(action: "denied");
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text(
+                            "Alert",
+                            style: GoogleFonts.ysabeau(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(height: 20),
+                              SingleChildScrollView(
+                                child: Text(
+                                  "Are you sure to reject this request",
+                                  style: GoogleFonts.ysabeau(
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Actorrej(action: "denied");
+
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      "Yes",
+                                      style: TextStyle(
+                                          color: Colors.green, fontSize: 15),
+                                    ),
+                                  ),
+                                  SizedBox(width: 20),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      "No",
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 15),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
                   },
                   icon: Icon(Icons.close),
                   label: Text("Reject"),

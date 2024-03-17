@@ -1,5 +1,5 @@
-import 'package:VenueVerse/components/Colors.dart';
-import 'package:VenueVerse/pages/Home.dart';
+import 'package:com.srec.venueverse/components/Colors.dart';
+import 'package:com.srec.venueverse/pages/Home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
