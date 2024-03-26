@@ -162,7 +162,7 @@ class _RequestcardState extends State<Requestcard> {
       Showsnackbar(
           context: context,
           contentType: ContentType.success,
-          title: "Accpect",
+          title: "Accept",
           message: "${widget.data['name']} request haas been updated");
     } catch (e) {
       print('Error fetching data: $e');

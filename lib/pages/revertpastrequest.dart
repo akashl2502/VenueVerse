@@ -56,7 +56,7 @@ class _ReverpastviewrequestState extends State<Reverpastviewrequest> {
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Widget littlecard(ft, tt, name, roll, reason, rid) {
+  Widget littlecard(ft, tt, name, roll, reason, rid, dept) {
     return Stack(
       children: [
         Card(
@@ -71,7 +71,7 @@ class _ReverpastviewrequestState extends State<Reverpastviewrequest> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${name} - ${roll}",
+                        "${name} - ${dept}",
                         style: GoogleFonts.ysabeau(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -190,7 +190,7 @@ class _ReverpastviewrequestState extends State<Reverpastviewrequest> {
         Map<dynamic, dynamic> data =
             docSnapshot.data() as Map<dynamic, dynamic>;
         Map columndata = data[Columnheader];
-
+        print(columndata);
         setState(() {
           loading = false;
           pastdata = columndata;
@@ -237,13 +237,25 @@ class _ReverpastviewrequestState extends State<Reverpastviewrequest> {
                           child: Column(
                             children: [
                               for (var i = 0; i < widgets.length; i++)
-                                littlecard(
+                                if (pastdata[widgets[i]].length != 5)
+                                  littlecard(
                                     pastdata[widgets[i]][0],
                                     pastdata[widgets[i]][1],
                                     pastdata[widgets[i]][2],
                                     pastdata[widgets[i]][3],
                                     pastdata[widgets[i]][4],
-                                    widgets[i])
+                                    widgets[i],
+                                    pastdata[widgets[i]][5],
+                                  )
+                                else
+                                  littlecard(
+                                      pastdata[widgets[i]][0],
+                                      pastdata[widgets[i]][1],
+                                      pastdata[widgets[i]][2],
+                                      pastdata[widgets[i]][3],
+                                      pastdata[widgets[i]][4],
+                                      widgets[i],
+                                      "NA")
                             ],
                           ))),
         ),

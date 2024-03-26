@@ -260,10 +260,9 @@ Future<void> Picktime_Bookvenue(
             final temp = querySnapshot.docs.map((doc) => doc.data()).toList();
 
             if (temp.isNotEmpty) {
-              var fcm = (temp[0] as Map<String, dynamic>)['fcm'];
-              print(fcm);
+              var fcm = (temp[0] as Map<String, dynamic>)['fcm'] ?? "";
               sendPushNotification(
-                  email: emailid,
+                  email: [emailid],
                   state: 0,
                   registration_token: fcm,
                   title: "New Booking Request",

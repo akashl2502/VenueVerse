@@ -31,15 +31,25 @@ class _PeekinsideState extends State<Peekinside> {
           : SingleChildScrollView(
               physics: BouncingScrollPhysics(),
               child: Column(
-                children: widget.list
-                    .map((data) => Peekinsidecard(
+                children: widget.list.map((data) {
+                  return data.length == 5
+                      ? Peekinsidecard(
                           ft: data[0],
                           name: data[2],
                           roll: data[3],
                           tt: data[1],
                           reason: data[4],
-                        ))
-                    .toList(),
+                          dept: "NA",
+                        )
+                      : Peekinsidecard(
+                          ft: data[0],
+                          name: data[2],
+                          roll: data[3],
+                          tt: data[1],
+                          reason: data[4],
+                          dept: data[5] ?? "NA",
+                        );
+                }).toList(),
               ),
             ),
     );
@@ -52,12 +62,14 @@ class Peekinsidecard extends StatelessWidget {
       required this.ft,
       required this.name,
       required this.tt,
-      required this.reason});
+      required this.reason,
+      required this.dept});
   final name;
   final roll;
   final ft;
   final tt;
   final reason;
+  final dept;
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -72,7 +84,7 @@ class Peekinsidecard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${name} - ${roll}",
+                    "${name} - ${dept}",
                     style: GoogleFonts.ysabeau(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

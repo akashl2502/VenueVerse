@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-var ip = 'https://prasath.pythonanywhere.com';
 // var ip = 'https://prasath.pythonanywhere.com';
-
+// var ip = "http://127.0.0.1:8000";
+var ip = 'https://prasath.pythonanywhere.com';
 Future<void> sendPushNotification(
     {required registration_token,
     required title,
@@ -17,13 +17,13 @@ Future<void> sendPushNotification(
   final url = Uri.parse('${ip}/send_push_notification/');
   final data = {
     'registration_token': registration_token,
-    'title': title,
+    'title': title.toString(),
     'body': body,
     'email': email,
     'state': state,
     'reason': reason
   };
-
+  print(data);
   try {
     final response = await http.post(
       url,

@@ -39,11 +39,14 @@ class _HomeState extends State<Home> {
   int dateindexselect = 0;
   List Room = [];
   List Appdata = [];
+
   final _advancedDrawerController = AdvancedDrawerController();
   @override
   DateTime now = DateTime.now();
   bool _isadmin = false;
   final _auth = FirebaseAuth.instance;
+    DateTime cur_date = DateTime.now();
+
   bool _ismaintance = false;
   void initState() {
     var a = DateFormat('yyyy-MM-dd').format(now);
@@ -183,7 +186,7 @@ class _HomeState extends State<Home> {
         children: [
           SizedBox(height: 10),
           Text(
-            "${DateTime.now().monthName} ${DateTime.now().year}",
+            "${cur_date.monthName} ${cur_date.year}",
             style:
                 GoogleFonts.ysabeau(fontSize: 24, fontWeight: FontWeight.bold),
           ),
@@ -221,6 +224,7 @@ class _HomeState extends State<Home> {
                             setState(() {
                               selectedDateIndex = index;
                               dateindexselect = index;
+                              cur_date = currentDate;
                             });
                           },
                           child: Container(

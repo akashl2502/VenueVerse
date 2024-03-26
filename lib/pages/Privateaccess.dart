@@ -2,6 +2,7 @@ import 'package:com.srec.venueverse/components/Snackbar.dart';
 import 'package:com.srec.venueverse/pages/Userdetails.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:com.srec.venueverse/pages/hall_assistant.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
@@ -448,43 +449,56 @@ class Admincard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    data['email'],
-                    style: GoogleFonts.ysabeau(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        print(data);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => hall_assistant(
+                      list: data['LS'] ?? [],
+                      email: data['email'],
+                      docid: docid,
+                    )));
+      },
+      child: Card(
+        elevation: 5,
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data['email'],
+                      style: GoogleFonts.ysabeau(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    data['dept'],
-                    style: GoogleFonts.ysabeau(
-                      fontSize: 16,
-                      color: Colors.grey[600],
+                    SizedBox(height: 5),
+                    Text(
+                      data['dept'],
+                      style: GoogleFonts.ysabeau(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            IconButton(
-                color: Appcolor.firstgreen,
-                icon: Icon(Icons.edit),
-                onPressed: () {
-                  showCustomDialog(
-                      context: context, docid: docid, email: data['email']);
-                }),
-          ],
+              IconButton(
+                  color: Appcolor.firstgreen,
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    showCustomDialog(
+                        context: context, docid: docid, email: data['email']);
+                  }),
+            ],
+          ),
         ),
       ),
     );

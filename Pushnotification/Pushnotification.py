@@ -17,6 +17,7 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', '*')
     return response
 cred = credentials.Certificate("mysite/Servicekey.json")
+# cred = credentials.Certificate("./Servicekey.json")
 initialize_app(cred)
 
 
@@ -33,32 +34,46 @@ def get_current_directory():
 def send_push_notification():
     try:
         request_data = request.get_json()
-        notification_request = PushNotificationRequest(
-            registration_token=request_data["registration_token"],
-            title=request_data["title"],
-            body=request_data["body"]
-        )
-
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=notification_request.title,
-                body=notification_request.body
-            ),
-            token=notification_request.registration_token
-        )
 
         # Send the message
-        response = messaging.send(message)
-        if request_data["state"]==0 and request_data["email"]:
+        if request_data["state"] == 0 and request_data["email"]:
             subject = "Venue Verse - New booking Request"
             body = request_data["body"]
-        elif request_data["state"]==1 and request_data["email"]:
+            registration_token = request_data["registration_token"]
+            title = request_data["title"]
+            body = request_data["body"]
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=title,
+                    body=body
+                ),
+                token=registration_token
+            )
+            response = messaging.send(message)
+
+
+        elif request_data["state"] == 1 and request_data["email"]:
             subject = "Venue Verse - Request Status"
             body = request_data["body"]
+            registration_token = request_data["registration_token"]
+            title = str(request_data["title"])  # Convert title to string
+            body = request_data["body"]
+            for data in registration_token:
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=title,
+                        body=body
+                    ),
+                    token=data
+                )
+                response = messaging.send(message)
+
+
         if request_data["email"]:
+            # for sep_email in request_data["email"]:
             message = MIMEMultipart()
             message["From"] = sender_email
-            message["To"] = request_data["email"]
+            message["To"] = ', '.join(request_data["email"])
             message["Subject"] = subject
             message.attach(MIMEText(body, "plain"))
             with smtplib.SMTP("smtp.gmail.com", 587) as server:
@@ -69,4 +84,5 @@ def send_push_notification():
 
     except Exception as e:
         return str(e), 500
+
 
